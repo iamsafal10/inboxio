@@ -8,3 +8,19 @@
   - *Context*: The agent handles sensitive OAuth secrets, application keys, and database credentials.
   - *Choice*: Committed `.env.example` as a template and strictly ignored `.env` and `*.env`.
   - *Rationale*: Prevents accidental credential leakage while maintaining documentation of required configuration parameters.
+- **Decision: Separate Read vs Send OAuth Scope Tracking**:
+  - *Context*: Gmail integration requests read-only scopes first and send access conditionally in later phases.
+  - *Choice*: Tracked `gmail_connected` and `gmail_send_scope_granted` separately in `User`.
+  - *Rationale*: Enforces least-privilege security principle and prevents requiring broad send access upfront.
+- **Decision: Decoupling Email Metadata from Body Storage**:
+  - *Context*: Emails require structured querying (dates, threads, senders) while text vectors need semantic chunking in Chroma.
+  - *Choice*: Stored structured metadata and chunk IDs in `emails_indexed` table, while actual email bodies reside in vector store.
+  - *Rationale*: Keeps relational database lean and optimized for indexing/joins while offloading high-dimensional vector search to Chroma.
+- **Decision: Soft Deletion for Memory Facts**:
+  - *Context*: Memory auditability requires proving "delete a fact, confirm the answer changes."
+  - *Choice*: Added `deleted_at` nullable timestamp on `memory_facts`.
+  - *Rationale*: Allows auditing and comparison experiments showing that deleted facts are excluded from agent context without losing historical trace.
+- **Decision: Single-Row Evaluation Diffs**:
+  - *Context*: Benchmark evaluations require comparing baseline answers vs agent answers.
+  - *Choice*: Both `baseline_answer` and `agent_answer` (along with their scores) are stored in the same row of `eval_results`.
+  - *Rationale*: Simplifies direct diffing, scoring comparisons, and reporting without joining across separate run tables.
