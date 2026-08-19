@@ -28,3 +28,15 @@
   - *Context*: Deciding whether to use Google OAuth as the single sign-on mechanism or use app-level user accounts with an attached Gmail integration.
   - *Choice*: Decoupled app identity (email/password + JWT) from Gmail OAuth tokens (connected later as a secondary step).
   - *Rationale*: Prevents locking application identity exclusively to Google, enables granular permission management (read vs send scopes), supports future multi-account or enterprise auth, and guarantees the user owns an account on Inboxio independently of Gmail token lifecycles.
+- **Decision: Granular Scope Separation (Read Now, Send Later)**:
+  - *Context*: Google Gmail API offers both `gmail.readonly` and `gmail.send` scopes.
+  - *Choice*: Restricted initial Gmail connection strictly to `gmail.readonly`, `openid`, and `userinfo.email`, deferring `gmail.send` to future optional opt-in actions.
+  - *Rationale*: Adheres to least privilege principles and ensures users who only want inbox analysis/retrieval are never forced to grant send permissions.
+- **Decision: Symmetric Token Encryption at Rest via Derived Fernet Key**:
+  - *Context*: Third-party OAuth tokens (access and refresh tokens) must be secured at rest in PostgreSQL.
+  - *Choice*: Used Fernet symmetric encryption with a deterministic key derived from `APP_SECRET_KEY` (SHA-256 hash + URL-safe Base64).
+  - *Rationale*: Eliminates the overhead of managing a second secret key while ensuring tokens are stored as encrypted bytes in the database.
+- **Decision: Stateless PKCE Flow with Encrypted State Parameter**:
+  - *Context*: PKCE `code_verifier` generated during authorization request must match the token exchange across separate HTTP requests.
+  - *Choice*: Encrypted `user_id` and `code_verifier` inside the `state` parameter using Fernet rather than maintaining short-lived database or cache sessions.
+  - *Rationale*: Guarantees zero session state mismatch across restarts and eliminates orphaned cache entries.
