@@ -24,3 +24,7 @@
   - *Context*: Benchmark evaluations require comparing baseline answers vs agent answers.
   - *Choice*: Both `baseline_answer` and `agent_answer` (along with their scores) are stored in the same row of `eval_results`.
   - *Rationale*: Simplifies direct diffing, scoring comparisons, and reporting without joining across separate run tables.
+- **Decision: Two-Step Auth Architecture (App Identity vs Gmail OAuth Connection)**:
+  - *Context*: Deciding whether to use Google OAuth as the single sign-on mechanism or use app-level user accounts with an attached Gmail integration.
+  - *Choice*: Decoupled app identity (email/password + JWT) from Gmail OAuth tokens (connected later as a secondary step).
+  - *Rationale*: Prevents locking application identity exclusively to Google, enables granular permission management (read vs send scopes), supports future multi-account or enterprise auth, and guarantees the user owns an account on Inboxio independently of Gmail token lifecycles.
