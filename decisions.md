@@ -124,3 +124,7 @@
   - *Context*: LLMs can occasionally hallucinate incorrect JSON/structures.
   - *Choice*: Placed the LLM invoke inside a retry loop (1 retry). If it fails twice, it raises a hard exception.
   - *Rationale*: Silently passing an empty or malformed list would lead to impossible-to-debug downstream errors. A hard fail is safer for agent stability.
+- **Decision: LLM-Based Simple Tool Routing**:
+  - *Context*: Need to map sub-goals to specific tools (sender, thread, date, semantic).
+  - *Choice*: Used `with_structured_output` on the LLM to map sub-goals to a known `ToolCallOutput` schema rather than relying on brittle regex text matching.
+  - *Rationale*: LLM routing handles variations in sub-goal wording naturally. Even though it's a "simple" heuristic router for now, doing it via structured output makes it highly robust and easily extendable later based on evaluation results.

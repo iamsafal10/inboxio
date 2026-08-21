@@ -86,3 +86,8 @@
   2. Uses Langchain's structured output (`with_structured_output`) and a Pydantic model (`PlannerOutput`) to guarantee a clean list of sub-goals.
   3. Handles simple lookup questions (1 sub-goal) and complex reasoning (multiple sub-goals).
   4. Implements a retry-then-fail mechanism for malformed outputs to prevent passing corrupted state to downstream nodes.
+- **Tool Selector Node & Retrieval Tools (Task 3)**:
+  1. Implemented three specialized retrieval tools in `app/services/retrieval_tools.py`: `search_by_sender`, `reconstruct_thread`, and `search_by_date_range`.
+  2. All tools return the standard chunk dictionary shape (with `distance=None` for DB queries) for uniform downstream processing.
+  3. Replaced the `tool_selector` stub with a basic LLM-powered router that inspects sub-goals and outputs a typed `ToolSelectionList`, routing to the most appropriate tool or defaulting to `semantic_search`.
+  4. Added robust per-user database isolation to all three new tools.
