@@ -98,3 +98,7 @@
   - *Context*: Need an objective way to prove the Phase 2 agent works.
   - *Choice*: Saved 5 specific questions, the baseline's flawed answers, and the human judgments directly to `reference_results.json` as a locked reference point.
   - *Rationale*: Prevents moving the goalposts. By documenting exactly how and why the baseline fails (e.g. failing to synthesize multiple emails, missing implied deadlines), we have a concrete target for the Phase 2 LangGraph agent.
+- **Decision: Phase 0 + 1 E2E Integration Suite**:
+  - *Context*: Needed to verify that all independently built Phase 0 and Phase 1 tasks work together as a single pipeline before starting Phase 2.
+  - *Choice*: Wrote a specific `test_integration_e2e.py` file with sequential test cases running against isolated test-only SQLite and ChromaDB instances.
+  - *Rationale*: Confirms end-to-end correctness and per-user isolation without polluting real developer data.
