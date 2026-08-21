@@ -116,3 +116,11 @@
   - *Context*: The agent will eventually need to answer complex queries requiring multiple searches (multi-hop).
   - *Choice*: Built a conditional edge routing from `conflict_checker` to either `synthesizer` or looping back to `tool_selector`.
   - *Rationale*: Bakes the potential for iterative reasoning directly into the architecture from Day 1, ensuring we don't have to rewrite the graph structure when implementing multi-hop logic later.
+- **Decision: Structured Output for Planner**:
+  - *Context*: Need to reliably break a question into sub-goals without fragile regex/text parsing.
+  - *Choice*: Used Langchain's `.with_structured_output()` and a Pydantic model for Gemini.
+  - *Rationale*: Guarantees a strongly-typed `list[str]` array of sub-goals that can be safely iterated over by downstream nodes.
+- **Decision: Retry-then-Fail Mechanism**:
+  - *Context*: LLMs can occasionally hallucinate incorrect JSON/structures.
+  - *Choice*: Placed the LLM invoke inside a retry loop (1 retry). If it fails twice, it raises a hard exception.
+  - *Rationale*: Silently passing an empty or malformed list would lead to impossible-to-debug downstream errors. A hard fail is safer for agent stability.

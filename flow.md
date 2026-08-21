@@ -81,3 +81,8 @@
   2. Uses a `TypedDict` (`AgentState`) carrying the user ID, original question, sub-goals, retrieved chunks, conflicts, and final answer.
   3. Nodes execute in sequence: Planner → Tool Selector → Retriever → Conflict Checker → (Loop back OR Synthesizer).
   4. A conditional edge allows looping back from Conflict Checker to Tool Selector for multi-hop reasoning.
+- **Planner Node (Task 2)**:
+  1. Replaced the stub planner with a real LLM call to Gemini (`gemini-3.5-flash`).
+  2. Uses Langchain's structured output (`with_structured_output`) and a Pydantic model (`PlannerOutput`) to guarantee a clean list of sub-goals.
+  3. Handles simple lookup questions (1 sub-goal) and complex reasoning (multiple sub-goals).
+  4. Implements a retry-then-fail mechanism for malformed outputs to prevent passing corrupted state to downstream nodes.
