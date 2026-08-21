@@ -90,3 +90,7 @@
   - *Context*: Phase 2 agent tools will blindly trust the search tool to return safe data.
   - *Choice*: Hardcoded the `user_id` parameter into `search_emails`, deriving the collection name strictly from the authenticated JWT token context, completely removing it from the user-provided request body.
   - *Rationale*: Guarantees that even if an AI agent hallucinates or maliciously constructs a search request attempting to peek into another user's inbox, the backend will forcibly scope the query to the authenticated user's Chroma collection. This is a foundational security guarantee for Phase 2.
+- **Decision: Permanent "Dumb Baseline" RAG Implementation**:
+  - *Context*: Need a way to prove that the complex agentic orchestration planned for Phase 2 actually improves outcomes over a standard RAG script.
+  - *Choice*: Built a strictly naive pipeline (`app/baseline`) that runs one raw search, stuffs the context into one prompt, and calls the LLM (`gemini-3.5-flash`). It is kept isolated from the main agent codebase.
+  - *Rationale*: This serves as the permanent control group. Any component added in Phase 2 must demonstrably beat this baseline on hard questions, or it will be removed.

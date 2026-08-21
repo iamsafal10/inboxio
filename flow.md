@@ -64,3 +64,9 @@
   3. Connects specifically to the authenticated user's isolated ChromaDB collection (`inboxio_user_<user_id>`).
   4. Executes an L2 distance vector search returning the `top_k` closest chunk matches.
   5. Returns the raw text, distance score, and full metadata (sender, subject, date, thread_id) for each matched chunk without any LLM synthesis.
+- **Dumb Baseline RAG Flow (Task 5)**:
+  1. Initiated via `POST /baseline/ask` containing a user `question`.
+  2. Directly passes the raw question to the Semantic Search tool (Task 4) requesting `top_k=5` chunks.
+  3. Formats the returned chunks and metadata into a single, naive context string.
+  4. Sends the context and question to the primary LLM (`gemini-3.5-flash`) via `ChatGoogleGenerativeAI` using a strict prompt template that prohibits outside knowledge.
+  5. Returns both the generated natural language answer and the raw chunks used, providing a permanent comparative baseline for Phase 2 evaluation.
