@@ -51,3 +51,10 @@
   3. Splits the raw email `body` into segments (chunks) based on a configurable `MAX_CHUNK_CHARS` threshold (default 2000), prioritizing paragraph boundaries (`\n\n`) over hard character limits.
   4. Attaches vital metadata (gmail message id, thread id, sender, subject, date, and chunk index) to every chunk.
   5. Saves output to a new `chunks` PostgreSQL table with `status="chunked"` and updates the parent email row status to `"chunked"`.
+- **Vector Embedding Flow (Task 3)**:
+  1. Initiated via `POST /gmail/embed` for the authenticated user.
+  2. Queries `chunks` for all un-embedded chunks belonging to the user (`status="chunked"`).
+  3. Connects to a local ChromaDB PersistentClient and fetches/creates a strongly isolated collection named `inboxio_user_<user_id>`.
+  4. Generates local vector embeddings using `SentenceTransformer` (`all-MiniLM-L6-v2`) in batches.
+  5. Stores the embedding vectors in ChromaDB alongside the original text and the duplicated SQL metadata (sender, subject, date, thread_id) to enable standalone filtering and citation.
+  6. Updates the processed `chunks` rows in PostgreSQL to `status="embedded"`.

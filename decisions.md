@@ -74,3 +74,11 @@
   - *Context*: Chunks need to be passed to the LLM and the Vector DB, which require standalone context.
   - *Choice*: The `chunks` table replicates `thread_id`, `sender`, `subject`, and `sent_at` from the parent `emails_indexed` table, rather than relying strictly on SQL JOINs.
   - *Rationale*: When a chunk is embedded in ChromaDB, its metadata payload will directly carry this data, allowing the agent to filter vector searches by date/sender and construct citations without constant round-trips to Postgres.
+- **Decision: Local Zero-Dependency Embeddings**:
+  - *Context*: Need an embedding model that balances speed, cost, and quality for email retrieval.
+  - *Choice*: Selected `SentenceTransformer` (`all-MiniLM-L6-v2`) running locally via Chroma's built-in functions, rather than calling the Gemini or OpenAI API.
+  - *Rationale*: Guarantees zero external network dependencies, no rate limits during bulk historical syncs, and avoids API key requirement hurdles for local development, while remaining highly capable for semantic search.
+- **Decision: Strict Per-User Vector Isolation**:
+  - *Context*: Multi-tenant RAG systems must absolutely prevent user A from retrieving user B's personal emails.
+  - *Choice*: Created isolated ChromaDB collections named dynamically by user UUID (`inboxio_user_<user_id>`) rather than using a single collection and relying solely on metadata filtering.
+  - *Rationale*: A hard architectural boundary is much safer than software-level metadata filters, entirely eliminating the risk of cross-tenant data bleed in vector search.

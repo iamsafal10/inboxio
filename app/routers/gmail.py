@@ -17,6 +17,7 @@ from app.services.gmail_oauth import (
 )
 from app.services.gmail_fetcher import fetch_recent_emails
 from app.services.email_chunker import process_email_chunks
+from app.services.embedder import process_unembedded_chunks
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
 
@@ -147,4 +148,25 @@ def chunk_synced_emails(
         "status": "success",
         "message": f"Successfully created {total_chunks} chunks.",
         "total_chunks": total_chunks
+    }
+
+@router.post("/embed")
+def embed_synced_chunks(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Triggers on-demand embedding of chunked, unembedded emails."""
+    try:
+        # Using a modest batch size for embedding
+        total_embedded = process_unembedded_chunks(user_id=current_user.id, db=db, batch_size=50)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to embed chunks: {str(e)}",
+        )
+        
+    return {
+        "status": "success",
+        "message": f"Successfully embedded {total_embedded} chunks.",
+        "total_embedded": total_embedded
     }
