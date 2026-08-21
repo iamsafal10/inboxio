@@ -82,3 +82,11 @@
   - *Context*: Multi-tenant RAG systems must absolutely prevent user A from retrieving user B's personal emails.
   - *Choice*: Created isolated ChromaDB collections named dynamically by user UUID (`inboxio_user_<user_id>`) rather than using a single collection and relying solely on metadata filtering.
   - *Rationale*: A hard architectural boundary is much safer than software-level metadata filters, entirely eliminating the risk of cross-tenant data bleed in vector search.
+- **Decision: Default `top_k=5` for Retrieval**:
+  - *Context*: Need a default retrieval limit that provides enough context for the LLM without blowing out context windows or slowing down synthesis.
+  - *Choice*: Set default `top_k=5` for the semantic search tool, returning up to ~10,000 chars of context (5 chunks * 2000 chars).
+  - *Rationale*: 5 chunks provides a good balance of high-recall context while remaining well within the fast context limits of models like Llama 3 or Gemini 1.5 Flash.
+- **Decision: Enshrining Per-User Isolation in Search Tools**:
+  - *Context*: Phase 2 agent tools will blindly trust the search tool to return safe data.
+  - *Choice*: Hardcoded the `user_id` parameter into `search_emails`, deriving the collection name strictly from the authenticated JWT token context, completely removing it from the user-provided request body.
+  - *Rationale*: Guarantees that even if an AI agent hallucinates or maliciously constructs a search request attempting to peek into another user's inbox, the backend will forcibly scope the query to the authenticated user's Chroma collection. This is a foundational security guarantee for Phase 2.

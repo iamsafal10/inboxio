@@ -3,6 +3,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -18,8 +19,13 @@ from app.services.gmail_oauth import (
 from app.services.gmail_fetcher import fetch_recent_emails
 from app.services.email_chunker import process_email_chunks
 from app.services.embedder import process_unembedded_chunks
+from app.services.semantic_search import search_emails
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
+
+class SearchRequest(BaseModel):
+    query: str
+    top_k: int = 5
 
 
 @router.get("/oauth/connect")
@@ -169,4 +175,24 @@ def embed_synced_chunks(
         "status": "success",
         "message": f"Successfully embedded {total_embedded} chunks.",
         "total_embedded": total_embedded
+    }
+
+@router.post("/search")
+def search_gmail(
+    req: SearchRequest,
+    current_user: User = Depends(get_current_user)
+) -> dict:
+    """Semantic search over embedded chunks."""
+    try:
+        results = search_emails(user_id=current_user.id, query=req.query, top_k=req.top_k)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Search failed: {str(e)}",
+        )
+        
+    return {
+        "status": "success",
+        "query": req.query,
+        "results": results
     }

@@ -58,3 +58,9 @@
   4. Generates local vector embeddings using `SentenceTransformer` (`all-MiniLM-L6-v2`) in batches.
   5. Stores the embedding vectors in ChromaDB alongside the original text and the duplicated SQL metadata (sender, subject, date, thread_id) to enable standalone filtering and citation.
   6. Updates the processed `chunks` rows in PostgreSQL to `status="embedded"`.
+- **Semantic Search Flow (Task 4)**:
+  1. Initiated via `POST /gmail/search` containing a natural language `query` and an optional `top_k` parameter (default 5).
+  2. Embeds the query using the identical `SentenceTransformer` model (`all-MiniLM-L6-v2`) to ensure vector compatibility.
+  3. Connects specifically to the authenticated user's isolated ChromaDB collection (`inboxio_user_<user_id>`).
+  4. Executes an L2 distance vector search returning the `top_k` closest chunk matches.
+  5. Returns the raw text, distance score, and full metadata (sender, subject, date, thread_id) for each matched chunk without any LLM synthesis.
