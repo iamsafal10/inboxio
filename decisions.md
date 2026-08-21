@@ -40,3 +40,11 @@
   - *Context*: PKCE `code_verifier` generated during authorization request must match the token exchange across separate HTTP requests.
   - *Choice*: Encrypted `user_id` and `code_verifier` inside the `state` parameter using Fernet rather than maintaining short-lived database or cache sessions.
   - *Rationale*: Guarantees zero session state mismatch across restarts and eliminates orphaned cache entries.
+- **Decision: In-Memory Only JWT Storage for Chat UI**:
+  - *Context*: The minimalist web interface needs to store the JWT after login to make authenticated requests.
+  - *Choice*: Stored the token in a plain JavaScript variable rather than `localStorage` or `sessionStorage`.
+  - *Rationale*: Prevents XSS attacks from easily harvesting persistent tokens, aligning with security best practices for sensitive credentials, even in a minimal UI.
+- **Decision: Placeholder Chat Endpoint (`POST /chat`)**:
+  - *Context*: The UI needs an endpoint to send messages to, but the LLM agent logic is slated for Phase 2.
+  - *Choice*: Created a stub endpoint that simply echoes the user's input with an "Agent not built yet" prefix.
+  - *Rationale*: Allows the full front-to-back request/response cycle to be built, tested, and visually verified without blocking on complex agent orchestrations.

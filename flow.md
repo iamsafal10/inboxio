@@ -28,3 +28,9 @@
   5. `exchange_code_for_tokens()` exchanges `code` and `code_verifier` with Google's token endpoint.
   6. Access and refresh tokens are symmetrically encrypted via Fernet (`app/core/crypto.py`) and stored in the `users` table along with token expiry and `gmail_connected = True`.
   7. User is redirected to `/gmail/connected` confirming successful link.
+- **Minimal Web Chat UI Flow (Phase 0 Stub)**:
+  1. Client loads `GET /chat-ui` to receive the single-page HTML interface.
+  2. User logs in, storing the returned JWT strictly in memory (JavaScript variable).
+  3. Client checks `GET /auth/me` to determine Gmail connection status.
+  4. User sends a message via `POST /chat`, protected by the `get_current_user` dependency.
+  5. The backend echoes a placeholder response (Note: `/chat` is intentionally a stub to be replaced with real LLM/Agent logic in Phase 2).
