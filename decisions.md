@@ -62,3 +62,15 @@
   - *Context*: The Gmail API enforces strict per-second and per-user quotas that are easily hit during bulk historical syncs.
   - *Choice*: Used a custom python decorator to catch `HttpError` (429, 403) and sleep with exponential backoff (e.g., 1s, 2s, 4s) up to a max limit.
   - *Rationale*: Allows the batch sync to proceed smoothly without catastrophic script failures, fulfilling the standard for robust agent API interactions.
+- **Decision: Raw Body Storage Added Back to Relational DB**:
+  - *Context*: Initially planned to avoid storing bodies in Postgres to keep the DB lean. However, chunking logic needs access to the raw body after fetching.
+  - *Choice*: Added a `body` column (nullable) to `emails_indexed` in Task 1 revision.
+  - *Rationale*: Necessary to decouple fetching from chunking/embedding, allowing processing pipelines to run asynchronously or be retried without constantly re-hitting the Gmail API.
+- **Decision: Simple Paragraph Chunking Strategy (`MAX_CHUNK_CHARS`)**:
+  - *Context*: Emails have highly variable structures, but most contain semantic breaks at double newlines (`\n\n`).
+  - *Choice*: Configured `MAX_CHUNK_CHARS=2000`. The chunker tries to group paragraphs up to this limit before hard-splitting the text.
+  - *Rationale*: A good balance for LLM context windows. It avoids overly complex semantic algorithms (like NLTK sentence splitters) which are unnecessary for standard email RAG right now.
+- **Decision: Duplicating Metadata onto Every Chunk**:
+  - *Context*: Chunks need to be passed to the LLM and the Vector DB, which require standalone context.
+  - *Choice*: The `chunks` table replicates `thread_id`, `sender`, `subject`, and `sent_at` from the parent `emails_indexed` table, rather than relying strictly on SQL JOINs.
+  - *Rationale*: When a chunk is embedded in ChromaDB, its metadata payload will directly carry this data, allowing the agent to filter vector searches by date/sender and construct citations without constant round-trips to Postgres.

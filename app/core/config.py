@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
     MAX_EMAILS: int = 500
+    MAX_CHUNK_CHARS: int = 2000
 
     model_config = SettingsConfigDict(
         env_file=".env",

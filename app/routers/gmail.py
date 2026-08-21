@@ -16,6 +16,7 @@ from app.services.gmail_oauth import (
     get_authorization_url,
 )
 from app.services.gmail_fetcher import fetch_recent_emails
+from app.services.email_chunker import process_email_chunks
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
 
@@ -126,4 +127,24 @@ def sync_gmail_emails(
         "status": "success",
         "message": f"Successfully synced {fetched_count} emails.",
         "fetched_count": fetched_count
+    }
+
+@router.post("/chunk")
+def chunk_synced_emails(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Triggers an on-demand chunking of fetched, unchunked emails."""
+    try:
+        total_chunks = process_email_chunks(user_id=current_user.id, db=db)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to chunk emails: {str(e)}",
+        )
+        
+    return {
+        "status": "success",
+        "message": f"Successfully created {total_chunks} chunks.",
+        "total_chunks": total_chunks
     }

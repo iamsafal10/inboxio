@@ -37,3 +37,17 @@
 - **Phase 0 Test Audit**:
   - Full suite verified with 16 automated tests.
   - Covers config loading, DB connection/schema mapping, JWT auth flow, Gmail OAuth connect, and the UI stub.
+
+## Phase 1: Ingestion & RAG
+- **Gmail Fetcher Flow (Task 1)**:
+  1. Initiated via `POST /gmail/sync` for the authenticated user.
+  2. Fetches `users.messages.list` from the Gmail API with pagination (`nextPageToken`), up to a configurable `MAX_EMAILS` limit (default 500).
+  3. Protects against 429/403 rate limits with a transparent exponential backoff mechanism.
+  4. Extracts structural fields (sender, recipient, subject, date) and plain-text body (stripping HTML where necessary).
+  5. Writes output to `emails_indexed` in PostgreSQL with `status="fetched"`, explicitly leaving `embedded=False` for downstream chunking.
+- **Email Chunker Flow (Task 2)**:
+  1. Initiated via `POST /gmail/chunk` for the authenticated user.
+  2. Queries `emails_indexed` for all emails belonging to the user where `status="fetched"`.
+  3. Splits the raw email `body` into segments (chunks) based on a configurable `MAX_CHUNK_CHARS` threshold (default 2000), prioritizing paragraph boundaries (`\n\n`) over hard character limits.
+  4. Attaches vital metadata (gmail message id, thread id, sender, subject, date, and chunk index) to every chunk.
+  5. Saves output to a new `chunks` PostgreSQL table with `status="chunked"` and updates the parent email row status to `"chunked"`.

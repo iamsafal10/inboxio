@@ -176,6 +176,7 @@ def fetch_recent_emails(user: User, db: Session, max_emails: Optional[int] = Non
                 recipient=parsed['recipient'][:255],
                 subject=parsed['subject'],
                 sent_at=parsed['sent_at'],
+                body=parsed['body'],
                 status="fetched",
                 embedded=False
             )

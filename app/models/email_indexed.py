@@ -61,6 +61,10 @@ class EmailIndexed(Base):
         Text,
         nullable=True,
     )
+    body = Column(
+        Text,
+        nullable=True,
+    )
     status = Column(
         String(50),
         default="fetched",
@@ -79,3 +83,4 @@ class EmailIndexed(Base):
 
     # Relationship
     user = relationship("User", back_populates="emails")
+    chunks = relationship("Chunk", back_populates="email", cascade="all, delete-orphan")
