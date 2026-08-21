@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/gmail/oauth/callback"
     GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
+    MAX_EMAILS: int = 500
 
     model_config = SettingsConfigDict(
         env_file=".env",

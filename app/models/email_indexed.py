@@ -61,6 +61,11 @@ class EmailIndexed(Base):
         Text,
         nullable=True,
     )
+    status = Column(
+        String(50),
+        default="fetched",
+        nullable=False,
+    )
     embedded = Column(
         Boolean,
         default=False,

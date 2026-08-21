@@ -34,3 +34,6 @@
   3. Client checks `GET /auth/me` to determine Gmail connection status.
   4. User sends a message via `POST /chat`, protected by the `get_current_user` dependency.
   5. The backend echoes a placeholder response (Note: `/chat` is intentionally a stub to be replaced with real LLM/Agent logic in Phase 2).
+- **Phase 0 Test Audit**:
+  - Full suite verified with 16 automated tests.
+  - Covers config loading, DB connection/schema mapping, JWT auth flow, Gmail OAuth connect, and the UI stub.

@@ -15,6 +15,7 @@ from app.services.gmail_oauth import (
     exchange_code_for_tokens,
     get_authorization_url,
 )
+from app.services.gmail_fetcher import fetch_recent_emails
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
 
@@ -95,4 +96,34 @@ def gmail_connected() -> dict:
     return {
         "status": "success",
         "message": "Gmail account connected successfully",
+    }
+
+@router.post("/sync")
+def sync_gmail_emails(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Triggers an on-demand sync of recent emails from Gmail API."""
+    if not current_user.gmail_connected:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Gmail account is not connected",
+        )
+    try:
+        fetched_count = fetch_recent_emails(user=current_user, db=db)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to sync emails: {str(e)}",
+        )
+        
+    return {
+        "status": "success",
+        "message": f"Successfully synced {fetched_count} emails.",
+        "fetched_count": fetched_count
     }

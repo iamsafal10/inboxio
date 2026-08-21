@@ -48,3 +48,17 @@
   - *Context*: The UI needs an endpoint to send messages to, but the LLM agent logic is slated for Phase 2.
   - *Choice*: Created a stub endpoint that simply echoes the user's input with an "Agent not built yet" prefix.
   - *Rationale*: Allows the full front-to-back request/response cycle to be built, tested, and visually verified without blocking on complex agent orchestrations.
+- **Decision: Test Suite Environment & Coverage Gaps Closed**:
+  - *Context*: Needed to guarantee robust automated test coverage across all Phase 0 tasks before proceeding. Found missing coverage for `config.py` defaults and `user.py` schema integrity.
+  - *Choice*: Added `test_config.py` (asserting `Settings` class defaults avoid hardcoded secrets) and `test_models.py` (verifying engine connectivity and schema mapping). Maintained requirement for local `docker-compose` PostgreSQL to ensure real-world schema compatibility over SQLite mock.
+  - *Rationale*: Protects against secret leakage and schema drift, proving the foundation is 100% verified before adding RAG complexity in Phase 1.
+
+## Phase 1: Ingestion & RAG
+- **Decision: Hard Capped Pagination for Dev (`MAX_EMAILS`)**:
+  - *Context*: Personal inboxes can contain tens of thousands of emails.
+  - *Choice*: Added a `MAX_EMAILS` limit (default 500) to the fetcher pagination loop.
+  - *Rationale*: Prevents the initial dev-environment sync from taking hours or blowing through API quotas before chunking/embedding logic is even tested.
+- **Decision: Transparent Exponential Backoff Wrapper**:
+  - *Context*: The Gmail API enforces strict per-second and per-user quotas that are easily hit during bulk historical syncs.
+  - *Choice*: Used a custom python decorator to catch `HttpError` (429, 403) and sleep with exponential backoff (e.g., 1s, 2s, 4s) up to a max limit.
+  - *Rationale*: Allows the batch sync to proceed smoothly without catastrophic script failures, fulfilling the standard for robust agent API interactions.
