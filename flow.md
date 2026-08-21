@@ -74,3 +74,10 @@
   1. Ran the baseline against 5 real inbox questions covering lookup, summarization, cross-referencing, implied deadlines, and contradictions.
   2. Saved the exact outputs and human judgments to `app/baseline/reference_results.json`.
   3. This file acts as a locked unit test for the Phase 2 LangGraph agent.
+
+## Phase 2: Core Agent Reasoning
+- **LangGraph Scaffold & State Flow (Task 1)**:
+  1. Initiated a new isolated module (`app/agent/graph.py`) containing the LangGraph structure.
+  2. Uses a `TypedDict` (`AgentState`) carrying the user ID, original question, sub-goals, retrieved chunks, conflicts, and final answer.
+  3. Nodes execute in sequence: Planner → Tool Selector → Retriever → Conflict Checker → (Loop back OR Synthesizer).
+  4. A conditional edge allows looping back from Conflict Checker to Tool Selector for multi-hop reasoning.

@@ -102,3 +102,17 @@
   - *Context*: Needed to verify that all independently built Phase 0 and Phase 1 tasks work together as a single pipeline before starting Phase 2.
   - *Choice*: Wrote a specific `test_integration_e2e.py` file with sequential test cases running against isolated test-only SQLite and ChromaDB instances.
   - *Rationale*: Confirms end-to-end correctness and per-user isolation without polluting real developer data.
+- **Decision: Scaffolding LangGraph Pattern**:
+  - *Context*: Transitioning from a single script to a multi-node agentic loop.
+  - *Choice*: Initialized the folder structure for `app/agent/nodes` and `app/agent/graph.py` before implementing any logic.
+  - *Rationale*: Separating nodes into distinct files prevents a "god-module" agent file and allows testing individual nodes independently.
+
+## Phase 2: Core Agent Reasoning
+- **Decision: Broad `AgentState` TypedDict for LangGraph**:
+  - *Context*: Need a single state object to flow through all agent nodes.
+  - *Choice*: Used `TypedDict` holding arrays for `sub_goals`, `tool_calls`, `retrieved_chunks`, and `conflicts_detected`.
+  - *Rationale*: Allows loose coupling between nodes while maintaining strict type safety; arrays easily support appending new data across multi-hop loops.
+- **Decision: Explicit Conditional Loop-Back Point**:
+  - *Context*: The agent will eventually need to answer complex queries requiring multiple searches (multi-hop).
+  - *Choice*: Built a conditional edge routing from `conflict_checker` to either `synthesizer` or looping back to `tool_selector`.
+  - *Rationale*: Bakes the potential for iterative reasoning directly into the architecture from Day 1, ensuring we don't have to rewrite the graph structure when implementing multi-hop logic later.
