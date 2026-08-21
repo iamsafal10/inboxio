@@ -70,3 +70,7 @@
   3. Formats the returned chunks and metadata into a single, naive context string.
   4. Sends the context and question to the primary LLM (`gemini-3.5-flash`) via `ChatGoogleGenerativeAI` using a strict prompt template that prohibits outside knowledge.
   5. Returns both the generated natural language answer and the raw chunks used, providing a permanent comparative baseline for Phase 2 evaluation.
+- **Evaluation Reference Lock-in (Task 6)**:
+  1. Ran the baseline against 5 real inbox questions covering lookup, summarization, cross-referencing, implied deadlines, and contradictions.
+  2. Saved the exact outputs and human judgments to `app/baseline/reference_results.json`.
+  3. This file acts as a locked unit test for the Phase 2 LangGraph agent.
