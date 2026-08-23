@@ -195,3 +195,8 @@
   - *Context*: The agent needs deep grounding in the user's background and writing style to draft high-quality emails.
   - *Choice*: Added a `profiles` table to store raw text (resume, career info, writing samples) and created a dedicated `inboxio_profile_<user_id>` Chroma collection.
   - *Rationale*: Isolating profile chunks from the general email index (`inboxio_user_<user_id>`) prevents profile data from polluting standard semantic searches. It allows the agent to specifically query "profile context" when drafting.
+
+- **Decision: Anti-Fabrication Prompting in Draft Tool**:
+  - *Context*: LLMs drafting resumes or cold emails tend to invent generic qualifications (e.g., "I have 5 years of experience in Python") if not strictly bounded.
+  - *Choice*: Designed the `draft_cold_email` prompt with explicit, highly restrictive rules ("DO NOT invent skills, jobs, experience") and explicitly fed it only retrieved Chroma chunks.
+  - *Rationale*: Prioritizes factual accuracy over persuasive bloat. It's better for a cold email to be short and factual than long and fraudulent. Returning the `used_chunks` natively allows downstream nodes to mathematically verify this constraint.

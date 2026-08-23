@@ -152,3 +152,9 @@
   1. Built `app/routers/profile.py` containing a minimal HTML UI and endpoints to save/load a user's resume, career info, and writing samples.
   2. Created `app/services/profile_embedder.py` to chunk the profile text and embed it into a dedicated, user-isolated ChromaDB collection (`inboxio_profile_<user_id>`).
   3. Validated proper functionality and collection isolation via `test_profile.py` with 100% test coverage.
+
+- **Task 2: Draft Cold Email Tool**:
+  1. Created `app/services/cold_email.py` containing the `draft_cold_email` function.
+  2. Integrated Chroma vector search to pull resume/career info chunks relevant to the target context, while explicitly retrieving writing style samples via metadata filtering.
+  3. Engineered a strict LLM prompt forcing the agent to rely *only* on provided profile facts (preventing AI hallucination of skills/experience) and to adopt the provided writing style.
+  4. Covered logic with `test_cold_email.py` asserting prompt formatting and anti-fabrication rules.
