@@ -13,3 +13,4 @@ class AgentState(TypedDict):
     conflicts_detected: List[Any]
     check_status: str
     final_answer: Optional[str]
+    citations: List[Any]

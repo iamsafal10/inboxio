@@ -30,6 +30,16 @@ class ConflictOutput(BaseModel):
     has_contradictions: bool = Field(description="True if genuine contradictions were found in the evidence.")
     conflicts: list[ConflictDetail] = Field(description="List of specific contradictions. Empty if none found.", default=[])
 
+class Citation(BaseModel):
+    source_id: int = Field(description="The numeric citation ID used in the text, e.g. 1.")
+    sender: str = Field(description="The sender of the email cited.")
+    subject: str = Field(description="The subject of the email cited.")
+    date: str = Field(description="The date of the email cited.")
+
+class SynthesisOutput(BaseModel):
+    answer: str = Field(description="The final comprehensive answer to the user's question, containing inline citations like [1] or [1, 2].")
+    citations: list[Citation] = Field(description="The structured list of all sources cited in the answer.")
+
 from app.llm.llm_setup import get_llm
 
 def get_planner_llm():
@@ -202,8 +212,82 @@ def conflict_checker_node(state: AgentState) -> AgentState:
 
 def synthesizer_node(state: AgentState) -> AgentState:
     """
-    Stub for synthesizer.
-    Will generate the final answer or determine more info is needed.
+    Generates a comprehensive final answer with inline citations.
+    Surfaces contradictions clearly and flags if checks failed.
+    Returns both the answer text and a structured list of citations.
     """
     logger.info("Running synthesizer_node")
-    return state
+    question = state.get("question", "")
+    retrieved_chunks = state.get("retrieved_chunks", [])
+    conflicts = state.get("conflicts_detected", [])
+    check_status = state.get("check_status", "passed")
+    
+    # Format the evidence identically, assigning a Source ID to each chunk.
+    formatted_evidence = []
+    for i, chunk in enumerate(retrieved_chunks):
+        meta = chunk.get("metadata", {})
+        sender = meta.get("sender", "Unknown")
+        date = meta.get("sent_at", "Unknown")
+        subject = meta.get("subject", "No Subject")
+        text = chunk.get("text", "")
+        formatted_evidence.append(f"--- [Source ID: {i+1}] ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n")
+    
+    full_evidence = "\n".join(formatted_evidence)
+    if not full_evidence:
+        full_evidence = "No evidence found."
+        
+    formatted_conflicts = ""
+    if conflicts:
+        for i, conflict in enumerate(conflicts):
+            formatted_conflicts += f"Conflict {i+1}:\n"
+            if isinstance(conflict, dict):
+                formatted_conflicts += f"- {conflict.get('source_a')}: {conflict.get('claim_a')}\n"
+                formatted_conflicts += f"- {conflict.get('source_b')}: {conflict.get('claim_b')}\n"
+            else:
+                formatted_conflicts += f"- {conflict.source_a}: {conflict.claim_a}\n"
+                formatted_conflicts += f"- {conflict.source_b}: {conflict.claim_b}\n"
+    else:
+        formatted_conflicts = "No contradictions detected."
+        
+    llm = get_llm(temperature=0.0)
+    structured_llm = llm.with_structured_output(SynthesisOutput)
+    
+    prompt = PromptTemplate.from_template(
+        "You are an expert email assistant.\n"
+        "Your task is to synthesize a final answer to the user's question using ONLY the provided evidence.\n\n"
+        "CRITICAL RULES:\n"
+        "1. Every claim MUST include an inline citation using the [Source ID] format (e.g., 'The meeting is on Tuesday [1].').\n"
+        "2. All citations used MUST be mapped and returned in the structured `citations` list.\n"
+        "3. If `Check Status` is 'failed', you MUST include this explicit disclaimer in your answer: 'Note: I couldn't verify the evidence for contradictions due to an internal error.'\n"
+        "4. If `Contradictions` lists any conflicts, you MUST surface them explicitly (e.g., 'I found conflicting info: [Sender A] says X, but [Sender B] says Y.'). NEVER silently pick a side.\n"
+        "5. If the evidence is thin or does not answer the question, state it plainly rather than guessing.\n\n"
+        "Question: {question}\n\n"
+        "Check Status: {check_status}\n\n"
+        "Contradictions:\n{conflicts}\n\n"
+        "Evidence:\n{evidence}\n\n"
+        "Output a structured result with the final `answer` and `citations` list."
+    )
+    
+    chain = prompt | structured_llm
+    
+    try:
+        result = chain.invoke({
+            "question": question,
+            "check_status": check_status,
+            "conflicts": formatted_conflicts,
+            "evidence": full_evidence
+        })
+        
+        if not result or not hasattr(result, "answer"):
+            raise ValueError("LLM returned malformed structured output.")
+            
+        final_answer = result.answer
+        citations = [c.model_dump() for c in result.citations] if result.citations else []
+        
+        logger.info(f"Synthesizer generated answer with {len(citations)} citations.")
+        return {**state, "final_answer": final_answer, "citations": citations}
+        
+    except Exception as e:
+        logger.error(f"Synthesizer failed: {e}")
+        fallback_answer = "I apologize, but I encountered an error while trying to synthesize the final answer."
+        return {**state, "final_answer": fallback_answer, "citations": []}

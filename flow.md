@@ -102,3 +102,9 @@
   2. Implemented batching logic (splitting context by 30,000 character boundaries) to support analyzing large evidence sets that exceed context limits.
   3. Uses `with_structured_output(ConflictOutput)` to extract structured contradictions (`has_contradictions`, plus a list of `claim_a`, `claim_b`, `source_a`, `source_b`).
   4. Introduced an explicit failure state (`check_status = "failed"`) if the LLM API exhausts retries, distinguishing real failures from a genuine "no contradiction" result.
+
+- **Task 5: Citation-Aware Synthesis**:
+  1. Replaced the `synthesizer` stub with a real `synthesizer_node` completing the full graph (plan → tool-select → retrieve → conflict-check → synthesize).
+  2. Generates comprehensive answers using inline citations formatted as `[Source ID]` (e.g., `[1]`).
+  3. Uses `with_structured_output(SynthesisOutput)` to enforce citations and return a separate, mapped structured list of `Citation` models for UI rendering.
+  4. Prompt enforces surfacing known contradictions explicitly and prepending a disclaimer if `check_status == "failed"`.

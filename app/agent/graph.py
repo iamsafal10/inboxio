@@ -62,6 +62,8 @@ def run_agent_graph(user_id: str, question: str) -> AgentState:
         tool_calls=[],
         retrieved_chunks=[],
         conflicts_detected=[],
-        final_answer=None
+        check_status="",
+        final_answer=None,
+        citations=[]
     )
     return app_graph.invoke(initial_state)

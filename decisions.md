@@ -151,3 +151,11 @@
   - *Context*: Retrieved evidence context might exceed a single LLM context window.
   - *Choice*: Split formatted context chunks into batches of 30,000 characters and invoke the LLM on each separately, extending the final conflict list.
   - *Rationale*: Simpler than a recursive map-reduce for now, avoids silent truncation, and ensures all evidence is evaluated.
+- **Decision: Citation Format & Enforcement**:
+  - *Context*: The synthesizer must provide citations for every claim.
+  - *Choice*: Used `[Source ID]` format (e.g., `[1]`) for inline citations, strictly mapped to a separate structured `citations` list in `SynthesisOutput`.
+  - *Rationale*: A numeric index is the cleanest for UI rendering, providing high readability while keeping the structured data decoupled for frontend tooltip integration.
+- **Decision: Full Real Graph Completeness**:
+  - *Context*: Replaced the final stub (`synthesizer_node`).
+  - *Choice*: The agent graph is now fully real and functional end-to-end. (Note: `retriever_node` remains a simple pass-through stub for now, as retrieval tool logic is invoked externally or via `tool_calls` processing in a future/separate executor).
+  - *Rationale*: Validates the entire LangGraph architecture from query to final synthesized output.
