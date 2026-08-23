@@ -158,3 +158,8 @@
   2. Integrated Chroma vector search to pull resume/career info chunks relevant to the target context, while explicitly retrieving writing style samples via metadata filtering.
   3. Engineered a strict LLM prompt forcing the agent to rely *only* on provided profile facts (preventing AI hallucination of skills/experience) and to adopt the provided writing style.
   4. Covered logic with `test_cold_email.py` asserting prompt formatting and anti-fabrication rules.
+
+- **Task 3: Self-Critique Node**:
+  1. Built `app/services/critique.py` with `self_critique(draft, profile_chunks_used)` to catch hallucinated facts.
+  2. Implemented strict LLM exception handling (a malformed JSON output or network error explicitly raises a `RuntimeError` rather than silently passing the draft as "clean").
+  3. Validated through `test_critique.py` that false claims are accurately flagged and that exceptions bubble up correctly.

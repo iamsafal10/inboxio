@@ -200,3 +200,8 @@
   - *Context*: LLMs drafting resumes or cold emails tend to invent generic qualifications (e.g., "I have 5 years of experience in Python") if not strictly bounded.
   - *Choice*: Designed the `draft_cold_email` prompt with explicit, highly restrictive rules ("DO NOT invent skills, jobs, experience") and explicitly fed it only retrieved Chroma chunks.
   - *Rationale*: Prioritizes factual accuracy over persuasive bloat. It's better for a cold email to be short and factual than long and fraudulent. Returning the `used_chunks` natively allows downstream nodes to mathematically verify this constraint.
+
+- **Decision: Fail-Closed Self-Critique Node**:
+  - *Context*: The self-critique node acts as the last automated line of defense against hallucinations before a human sees the draft.
+  - *Choice*: The `self_critique` function intercepts any malformed JSON output or LLM API exception and raises a hard `RuntimeError`. It never silently defaults to returning "no flags found" (empty list).
+  - *Rationale*: A broken QA check is worse than no check at all because it gives a false sense of security. "Fail closed" ensures that if the critique can't guarantee safety, the pipeline stops and the human is alerted.
