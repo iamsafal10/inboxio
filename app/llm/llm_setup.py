@@ -22,7 +22,7 @@ def get_llm(temperature: float = 0.0) -> BaseChatModel:
 
     if provider == "groq":
         return ChatGroq(
-            model="llama3-8b-8192",  # Default groq model, can be made configurable
+            model="openai/gpt-oss-120b",  # Default groq model, can be made configurable
             temperature=temperature,
             api_key=settings.GROQ_API_KEY or "dummy_key"
         )

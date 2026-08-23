@@ -22,7 +22,7 @@ class TestLLMSetup(unittest.TestCase):
         mock_settings.GROQ_API_KEY = 'test_groq_key'
         llm = get_llm()
         self.assertIsInstance(llm, ChatGroq)
-        self.assertEqual(llm.model_name, 'llama3-8b-8192')
+        self.assertEqual(llm.model_name, 'openai/gpt-oss-120b')
 
     @patch('app.llm.llm_setup.settings')
     def test_get_llm_openrouter(self, mock_settings):
