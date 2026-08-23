@@ -1,5 +1,4 @@
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON
 import uuid
 
 from app.core.database import Base
@@ -29,7 +28,7 @@ class ColdEmailDraft(Base):
         nullable=False,
     )
     flags = Column(
-        JSONB,
+        JSON,
         nullable=True,
     )
     status = Column(

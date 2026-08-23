@@ -8,6 +8,7 @@ from app.routers.gmail import router as gmail_router
 from app.routers.chat import router as chat_router
 from app.routers.baseline import router as baseline_router
 from app.routers.profile import router as profile_router
+from app.routers.cold_email import router as cold_email_router
 
 app = FastAPI(
     title="Inboxio",
@@ -20,6 +21,7 @@ app.include_router(gmail_router)
 app.include_router(chat_router)
 app.include_router(baseline_router)
 app.include_router(profile_router)
+app.include_router(cold_email_router, prefix="/cold_email", tags=["Cold Email"])
 
 
 @app.get("/")

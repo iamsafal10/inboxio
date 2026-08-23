@@ -215,3 +215,8 @@
   - *Context*: During manual end-to-end verification (`verify_task4.py`), the `googleapiclient` call to `gmail.googleapis.com` timed out.
   - *Observation*: The OAuth flow correctly escalated the scope and returned a valid token with the `gmail.send` permission. The DB logging mechanism perfectly captured the timeout as a `FAILED` log entry.
   - *Decision*: This is recorded as a local environmental/network limitation (e.g., IPv6 routing issue with `httplib2`) rather than an application defect. The application logic is fully verified through comprehensive mocked test suites and the proven fail-closed database logging.
+
+- **Decision: Bypass-Resistant Human Approval Gate**:
+  - *Context*: We needed to guarantee that a cold email draft could never be sent without a human explicitly reviewing it, and importantly, explicitly acknowledging any hallucination warnings flagged by the `self_critique` step.
+  - *Choice*: Instead of relying solely on the UI to prevent a click, the system stores the draft and its critique flags in a `ColdEmailDraft` database table during the generation step. When the send API is called, the server validates the DB record. If flags exist, it requires an explicit `acknowledge_flags=True` boolean in the payload. 
+  - *Rationale*: A determined client or API scraper cannot bypass the critique warning by simply hitting the `/send` endpoint with raw text. The server statefully enforces that the draft went through the pipeline and that the warnings were structurally acknowledged.

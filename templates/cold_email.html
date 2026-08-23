@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cold Email UI</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 2rem; max-width: 800px; margin: auto; }
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-danger { color: #a94442; background-color: #f2dede; border-color: #ebccd1; }
+        .alert-success { color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; }
+        textarea { width: 100%; height: 150px; font-family: monospace; padding: 10px; box-sizing: border-box; }
+        input[type="text"] { width: 100%; padding: 10px; box-sizing: border-box; margin-bottom: 10px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .section { margin-bottom: 30px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Cold Email Drafting & Approval Gate</h1>
+    <div id="authError" class="alert alert-danger hidden">Not authenticated. Please log in first.</div>
+
+    <!-- Step 1: Draft Request -->
+    <div class="section" id="draftSection">
+        <h2>1. Request a Draft</h2>
+        <label>Target Context (e.g. company, recruiter name, role):</label>
+        <input type="text" id="targetContext" placeholder="e.g. Hiring Manager at OpenAI for Backend Role">
+        <button id="btnGenerate">Generate Draft</button>
+        <div id="draftingMsg" class="hidden">Generating draft and running self-critique (this may take a few seconds)...</div>
+    </div>
+
+    <!-- Step 2: Review and Approve -->
+    <div class="section hidden" id="reviewSection">
+        <h2>2. Review & Approve</h2>
+        
+        <div id="flagsAlert" class="alert alert-danger hidden">
+            <strong>CRITIQUE WARNING: Hallucinated/Unsupported claims detected!</strong>
+            <ul id="flagsList"></ul>
+        </div>
+        
+        <label>Draft Body (You may edit this):</label>
+        <textarea id="draftBody"></textarea>
+
+        <div id="ackContainer" class="hidden" style="margin-top: 15px; background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px;">
+            <label style="cursor: pointer; font-weight: bold; color: #856404;">
+                <input type="checkbox" id="ackCheckbox">
+                I have reviewed these flags and manually edited the draft or acknowledge the risks.
+            </label>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button id="btnSend" disabled style="background-color: #007bff; color: white; border: none; border-radius: 4px;">Send Email</button>
+            <div id="sendingMsg" class="hidden">Sending...</div>
+        </div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="section hidden" id="successSection">
+        <h2>3. Status</h2>
+        <div id="resultMsg" class="alert"></div>
+    </div>
+
+<script>
+    let currentDraftId = null;
+    let hasFlags = false;
+
+    // We expect the JWT token to be available if logged in (for testing, we'll try to get it from a cookie or just assume the user uses the swagger UI to get a token and paste it here if needed, but normally we would handle login. Since it's a test page, we'll ask for token if not found).
+    const token = localStorage.getItem("token") || prompt("Please paste your JWT Bearer token here for testing:");
+    if (!token) {
+        document.getElementById("authError").classList.remove("hidden");
+    }
+
+    const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
+
+    document.getElementById("btnGenerate").addEventListener("click", async () => {
+        const targetContext = document.getElementById("targetContext").value;
+        if (!targetContext) return alert("Enter target context");
+
+        document.getElementById("btnGenerate").disabled = true;
+        document.getElementById("draftingMsg").classList.remove("hidden");
+        document.getElementById("reviewSection").classList.add("hidden");
+
+        try {
+            const res = await fetch("/api/draft", {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ target_context: targetContext })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to generate draft");
+
+            currentDraftId = data.id;
+            document.getElementById("draftBody").value = data.body;
+            
+            const flagsList = document.getElementById("flagsList");
+            flagsList.innerHTML = "";
+            const flagsAlert = document.getElementById("flagsAlert");
+            const ackContainer = document.getElementById("ackContainer");
+            const btnSend = document.getElementById("btnSend");
+            const ackCheckbox = document.getElementById("ackCheckbox");
+
+            if (data.flags && data.flags.length > 0) {
+                hasFlags = true;
+                data.flags.forEach(flag => {
+                    const li = document.createElement("li");
+                    li.textContent = `Claimed: "${flag.draft_claim}" | Truth: "${flag.profile_truth}"`;
+                    flagsList.appendChild(li);
+                });
+                flagsAlert.classList.remove("hidden");
+                ackContainer.classList.remove("hidden");
+                btnSend.disabled = true;
+                ackCheckbox.checked = false;
+            } else {
+                hasFlags = false;
+                flagsAlert.classList.add("hidden");
+                ackContainer.classList.add("hidden");
+                btnSend.disabled = false;
+            }
+
+            document.getElementById("reviewSection").classList.remove("hidden");
+        } catch (e) {
+            alert(e);
+        } finally {
+            document.getElementById("btnGenerate").disabled = false;
+            document.getElementById("draftingMsg").classList.add("hidden");
+        }
+    });
+
+    document.getElementById("ackCheckbox").addEventListener("change", (e) => {
+        document.getElementById("btnSend").disabled = !e.target.checked;
+    });
+
+    document.getElementById("btnSend").addEventListener("click", async () => {
+        const editedBody = document.getElementById("draftBody").value;
+        const ack = document.getElementById("ackCheckbox").checked;
+
+        document.getElementById("btnSend").disabled = true;
+        document.getElementById("sendingMsg").classList.remove("hidden");
+
+        try {
+            const res = await fetch(`/api/send/${currentDraftId}`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                    edited_body: editedBody,
+                    acknowledge_flags: hasFlags ? ack : false
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to send email");
+
+            document.getElementById("reviewSection").classList.add("hidden");
+            document.getElementById("successSection").classList.remove("hidden");
+            
+            const resultMsg = document.getElementById("resultMsg");
+            resultMsg.textContent = "Success! " + JSON.stringify(data);
+            resultMsg.className = "alert alert-success";
+
+        } catch (e) {
+            alert(e);
+            document.getElementById("btnSend").disabled = false;
+        } finally {
+            document.getElementById("sendingMsg").classList.add("hidden");
+        }
+    });
+</script>
+</body>
+</html>
