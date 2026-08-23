@@ -1,6 +1,5 @@
 import logging
 from typing import Any
-from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
 
@@ -21,12 +20,10 @@ class ToolCallOutput(BaseModel):
 class ToolSelectionList(BaseModel):
     tool_calls: list[ToolCallOutput] = Field(description="List of tools to execute for the given sub-goals.")
 
+from app.llm.llm_setup import get_llm
+
 def get_planner_llm():
-    return ChatGoogleGenerativeAI(
-        model="gemini-3.5-flash",
-        temperature=0.0,
-        google_api_key=settings.GEMINI_API_KEY or "dummy_key"
-    )
+    return get_llm(temperature=0.0)
 
 def planner_node(state: AgentState) -> AgentState:
     """

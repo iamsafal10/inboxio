@@ -35,11 +35,11 @@ class TestChat(unittest.TestCase):
         # 2. Test authenticated request
         res = client.post(
             "/chat", 
-            json={"message": "hello agent"},
+            json={"message": "Did I get any interview invites?"},
             headers={"Authorization": f"Bearer {token}"}
         )
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()["response"], "Agent not built yet. You said: hello agent")
+        self.assertEqual(res.json()["response"], "Agent not built yet. You said: Did I get any interview invites?")
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,6 +42,10 @@ class MemoryFact(Base):
         default=get_utc_now,
         nullable=False,
     )
+    provider = Column(
+        String(50),
+        nullable=True,
+    )
     deleted_at = Column(
         DateTime(timezone=True),
         nullable=True,

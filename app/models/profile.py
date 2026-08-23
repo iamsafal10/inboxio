@@ -41,6 +41,10 @@ class Profile(Base):
         Text,
         nullable=True,
     )
+    provider = Column(
+        String(50),
+        nullable=True,
+    )
     updated_at = Column(
         DateTime(timezone=True),
         default=get_utc_now,

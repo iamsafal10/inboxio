@@ -100,14 +100,14 @@ class TestIntegrationE2E(unittest.TestCase):
         self.assertTrue(len(res_u1) > 0)
         self.assertIn("Friday", res_u1[0]["text"])
 
-    @patch('app.baseline.dumb_baseline.ChatGoogleGenerativeAI')
-    def test_05_baseline_agent(self, mock_llm_class):
+    @patch('app.baseline.dumb_baseline.get_llm')
+    def test_05_baseline_agent(self, mock_get_llm):
         """Test Case 5: Dumb baseline returns answer using the correct retrieved chunks."""
         mock_llm_instance = MagicMock()
         mock_response = MagicMock()
         mock_response.content = "The deadline is Friday."
         mock_llm_instance.invoke.return_value = mock_response
-        mock_llm_class.return_value = mock_llm_instance
+        mock_get_llm.return_value = mock_llm_instance
         
         ans = answer_question_baseline(self.user1_id, "When is the deadline?")
         self.assertEqual(ans["answer"], "The deadline is Friday.")

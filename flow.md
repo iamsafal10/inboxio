@@ -90,4 +90,9 @@
   1. Implemented three specialized retrieval tools in `app/services/retrieval_tools.py`: `search_by_sender`, `reconstruct_thread`, and `search_by_date_range`.
   2. All tools return the standard chunk dictionary shape (with `distance=None` for DB queries) for uniform downstream processing.
   3. Replaced the `tool_selector` stub with a basic LLM-powered router that inspects sub-goals and outputs a typed `ToolSelectionList`, routing to the most appropriate tool or defaulting to `semantic_search`.
-  4. Added robust per-user database isolation to all three new tools.
+- **Infrastructure Hardening (Pre-Task 4)**:
+  1. Configured hard maximum (`MAX_EMAILS=25`) for email ingestion in `app/core/config.py`.
+  2. Implemented a deterministic domain filter (`domain_filter.py`) operating with zero LLM calls. The filter strictly gates emails at the ingestion layer (fetching -> filtering -> discarding non-career emails) and questions at the query layer (`chat_endpoint`), ensuring irrelevant data never reaches ChromaDB or the LLM.
+  3. Added an LLM-agnostic instantiation mechanism (`app/llm/llm_setup.py`) to swap models via the `LLM_PROVIDER` environment variable, enabling `stealth/ox-alpha` via OpenRouter alongside Gemini and Groq.
+  4. Extensively verified that retrieval tools (semantic search, sender, thread, date-range) make zero LLM calls.
+  5. Enforced LLM provider traceability by creating an Alembic migration that adds a `provider` tracking column to all persisting models (`EvalResult`, `MemoryFact`, `Profile`).

@@ -165,10 +165,15 @@ def get_chat_ui():
     return HTMLResponse(content=CHAT_UI_HTML)
 
 
+from app.services.domain_filter import is_career_question
+
 @router.post("/chat")
 def chat_endpoint(payload: ChatRequest, current_user: User = Depends(get_current_user)):
     """Placeholder chat endpoint. 
     
     Phase 2 Note: Replace this placeholder echo logic with real agent/LLM logic.
     """
+    if not is_career_question(payload.message):
+        return {"response": "I can only answer questions related to your career, job applications, or interviews."}
+        
     return {"response": f"Agent not built yet. You said: {payload.message}"}

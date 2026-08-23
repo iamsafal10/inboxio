@@ -18,6 +18,7 @@ from app.core.crypto import decrypt_token
 from app.models.user import User
 from app.models.email_indexed import EmailIndexed
 from app.services.gmail_oauth import refresh_credentials
+from app.services.domain_filter import is_career_related
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,13 @@ def fetch_recent_emails(user: User, db: Session, max_emails: Optional[int] = Non
             parsed = parse_message_payload(msg_payload)
             
             if parsed['sent_at'] is None:
+                fetched_count += 1
                 continue # Skip if we can't parse the date properly for now
+
+            # Filter non-career emails
+            if not is_career_related(parsed['subject'], parsed['sender'], parsed['body']):
+                fetched_count += 1
+                continue
 
             email_idx = EmailIndexed(
                 user_id=user.id,

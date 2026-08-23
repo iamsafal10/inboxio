@@ -78,7 +78,10 @@ class TestGmailFetcher(unittest.TestCase):
         msg_payload = {
             "threadId": "t1",
             "payload": {
-                "headers": [{"name": "Date", "value": "Fri, 21 Aug 2026 12:00:00 +0000"}],
+                "headers": [
+                    {"name": "Date", "value": "Fri, 21 Aug 2026 12:00:00 +0000"},
+                    {"name": "Subject", "value": "Interview Invite"}
+                ],
                 "mimeType": "text/plain",
                 "body": {"data": base64.urlsafe_b64encode(b"body").decode('utf-8')}
             }

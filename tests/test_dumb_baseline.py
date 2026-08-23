@@ -15,9 +15,9 @@ class TestDumbBaseline(unittest.TestCase):
         self.assertIn("From: Alice", formatted)
         self.assertIn("Hello world", formatted)
 
-    @patch('app.baseline.dumb_baseline.ChatGoogleGenerativeAI')
+    @patch('app.baseline.dumb_baseline.get_llm')
     @patch('app.baseline.dumb_baseline.search_emails')
-    def test_answer_question_baseline(self, mock_search, mock_llm_class):
+    def test_answer_question_baseline(self, mock_search, mock_get_llm):
         """Test search is called EXACTLY ONCE and LLM gets stuffed prompt."""
         
         # Mock search return
@@ -29,7 +29,7 @@ class TestDumbBaseline(unittest.TestCase):
         mock_response = MagicMock()
         mock_response.content = "Mocked answer"
         mock_llm_instance.invoke.return_value = mock_response
-        mock_llm_class.return_value = mock_llm_instance
+        mock_get_llm.return_value = mock_llm_instance
         
         result = answer_question_baseline("user-123", "What is the status?")
         

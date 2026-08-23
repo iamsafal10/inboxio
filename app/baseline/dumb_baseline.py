@@ -2,8 +2,9 @@
 
 import logging
 from typing import Dict, Any, List
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
+
+from app.llm.llm_setup import get_llm
 
 from app.services.semantic_search import search_emails
 from app.core.config import settings
@@ -55,10 +56,7 @@ def answer_question_baseline(user_id: str, question: str) -> Dict[str, Any]:
     
     # 3. Call LLM
     try:
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-3.5-flash", 
-            google_api_key=settings.GEMINI_API_KEY or "dummy_key"
-        )
+        llm = get_llm(temperature=0.0)
         prompt_val = BASELINE_PROMPT.invoke({"context": context_str, "question": question})
         response = llm.invoke(prompt_val)
         answer = response.content

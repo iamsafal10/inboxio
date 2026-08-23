@@ -127,4 +127,19 @@
 - **Decision: LLM-Based Simple Tool Routing**:
   - *Context*: Need to map sub-goals to specific tools (sender, thread, date, semantic).
   - *Choice*: Used `with_structured_output` on the LLM to map sub-goals to a known `ToolCallOutput` schema rather than relying on brittle regex text matching.
-  - *Rationale*: LLM routing handles variations in sub-goal wording naturally. Even though it's a "simple" heuristic router for now, doing it via structured output makes it highly robust and easily extendable later based on evaluation results.
+- **Decision: Hard Capped Pagination Limit (MAX_EMAILS=25)**:
+  - *Context*: Needed a strict cap on Gmail fetch volumes for phase 2.
+  - *Choice*: Fetch loops terminate exactly at 25 emails fetched (regardless of whether they pass the career domain filter).
+  - *Rationale*: Prevents runaway API limits while ensuring the system isn't forced to indefinitely paginate through thousands of irrelevant emails just to find 25 valid ones.
+- **Decision: Zero-LLM Career Domain Filtering**:
+  - *Context*: LLM calls are expensive and slow; irrelevant emails (shopping, spam) waste vector DB space and retrieval time.
+  - *Choice*: Built a deterministic keyword-based filter (`domain_filter.py`) that strictly drops non-career emails *before* they are ever stored in the database or ChromaDB.
+  - *Rationale*: Prevents downstream pipeline bloat. A false reject is considered worse than a wasted retrieval, so the filter errs on the side of allowing uncertain emails through.
+- **Decision: Early Query Gating**:
+  - *Context*: Answering non-career questions wastes agent LLM cycles.
+  - *Choice*: Used the deterministic domain filter to immediately reject irrelevant questions at the `chat_endpoint` with zero LLM calls.
+  - *Rationale*: Hardens the system against off-topic queries instantly and cheaply.
+- **Decision: LLM-Agnostic Interface & Provider Tagging**:
+  - *Context*: Need to trial OpenRouter's stealth preview model (`stealth/ox-alpha`) while keeping Gemini and Groq as fallbacks.
+  - *Choice*: Used Langchain's universal `BaseChatModel` interface dynamically loaded via `LLM_PROVIDER`, and added a `provider` column to `EvalResult`, `MemoryFact`, and `Profile`.
+  - *Rationale*: Allows instant one-line rollback via `.env` without modifying agent logic. Tagging generated outputs tracks exactly which model produced which artifact during the time-limited Ox Alpha preview.
