@@ -143,3 +143,11 @@
   - *Context*: Need to trial OpenRouter's stealth preview model (`stealth/ox-alpha`) while keeping Gemini and Groq as fallbacks.
   - *Choice*: Used Langchain's universal `BaseChatModel` interface dynamically loaded via `LLM_PROVIDER`, and added a `provider` column to `EvalResult`, `MemoryFact`, and `Profile`.
   - *Rationale*: Allows instant one-line rollback via `.env` without modifying agent logic. Tagging generated outputs tracks exactly which model produced which artifact during the time-limited Ox Alpha preview.
+- **Decision: Explicit Failure State in Contradiction Checking**:
+  - *Context*: LLM APIs can timeout or fail parsing structured output. If this happens during contradiction checking, returning an empty list (`[]`) is dangerous as it implies "no contradiction was found".
+  - *Choice*: Added `check_status: str` to `AgentState` and set it to `"failed"` if all retries exhaust, explicitly distinguishing failure from a clean check.
+  - *Rationale*: Prevents false confidence. The downstream synthesizer node needs to know if the check was successful or if it should alert the user that the safety check failed.
+- **Decision: Character-Based LLM Batching**:
+  - *Context*: Retrieved evidence context might exceed a single LLM context window.
+  - *Choice*: Split formatted context chunks into batches of 30,000 characters and invoke the LLM on each separately, extending the final conflict list.
+  - *Rationale*: Simpler than a recursive map-reduce for now, avoids silent truncation, and ensures all evidence is evaluated.

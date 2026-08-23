@@ -10,5 +10,6 @@ class AgentState(TypedDict):
     sub_goals: List[str]
     tool_calls: List[Any]
     retrieved_chunks: List[Any]
-    conflicts_detected: List[str]
+    conflicts_detected: List[Any]
+    check_status: str
     final_answer: Optional[str]

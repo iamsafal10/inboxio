@@ -96,3 +96,9 @@
   3. Added an LLM-agnostic instantiation mechanism (`app/llm/llm_setup.py`) to swap models via the `LLM_PROVIDER` environment variable, enabling `stealth/ox-alpha` via OpenRouter alongside Gemini and Groq.
   4. Extensively verified that retrieval tools (semantic search, sender, thread, date-range) make zero LLM calls.
   5. Enforced LLM provider traceability by creating an Alembic migration that adds a `provider` tracking column to all persisting models (`EvalResult`, `MemoryFact`, `Profile`).
+
+- **Task 4: Real Contradiction Checking**:
+  1. Replaced the `conflict_checker` stub with a real `conflict_checker_node` that aggregates retrieved chunks.
+  2. Implemented batching logic (splitting context by 30,000 character boundaries) to support analyzing large evidence sets that exceed context limits.
+  3. Uses `with_structured_output(ConflictOutput)` to extract structured contradictions (`has_contradictions`, plus a list of `claim_a`, `claim_b`, `source_a`, `source_b`).
+  4. Introduced an explicit failure state (`check_status = "failed"`) if the LLM API exhausts retries, distinguishing real failures from a genuine "no contradiction" result.

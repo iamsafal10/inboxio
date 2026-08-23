@@ -20,6 +20,16 @@ class ToolCallOutput(BaseModel):
 class ToolSelectionList(BaseModel):
     tool_calls: list[ToolCallOutput] = Field(description="List of tools to execute for the given sub-goals.")
 
+class ConflictDetail(BaseModel):
+    claim_a: str = Field(description="The first conflicting claim or fact.")
+    claim_b: str = Field(description="The second claim or fact that contradicts the first.")
+    source_a: str = Field(description="The source or context (e.g., sender, date, subject) of the first claim.")
+    source_b: str = Field(description="The source or context of the second claim.")
+
+class ConflictOutput(BaseModel):
+    has_contradictions: bool = Field(description="True if genuine contradictions were found in the evidence.")
+    conflicts: list[ConflictDetail] = Field(description="List of specific contradictions. Empty if none found.", default=[])
+
 from app.llm.llm_setup import get_llm
 
 def get_planner_llm():
@@ -121,11 +131,74 @@ def retriever_node(state: AgentState) -> AgentState:
 
 def conflict_checker_node(state: AgentState) -> AgentState:
     """
-    Stub for conflict checker.
-    Will identify contradictions across retrieved chunks.
+    Identifies contradictions across retrieved chunks using structured LLM output.
+    Batches evidence if it is too large for a single context window.
+    Returns explicit check_status='failed' if LLM fails, never silencing errors as an empty list.
     """
     logger.info("Running conflict_checker_node")
-    return state
+    retrieved_chunks = state.get("retrieved_chunks", [])
+    
+    if not retrieved_chunks:
+        return {**state, "conflicts_detected": [], "check_status": "passed"}
+
+    # Format chunks into a single text representation
+    formatted_evidence = []
+    for i, chunk in enumerate(retrieved_chunks):
+        meta = chunk.get("metadata", {})
+        sender = meta.get("sender", "Unknown")
+        date = meta.get("sent_at", "Unknown")
+        subject = meta.get("subject", "No Subject")
+        text = chunk.get("text", "")
+        formatted_evidence.append(f"--- Evidence {i+1} ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n")
+    
+    full_text = "\n".join(formatted_evidence)
+    
+    # Batching logic: chunk text if extremely large (e.g., > 30000 chars)
+    max_chars_per_batch = 30000
+    batches = [full_text[i:i+max_chars_per_batch] for i in range(0, len(full_text), max_chars_per_batch)]
+    
+    llm = get_llm(temperature=0.0)
+    structured_llm = llm.with_structured_output(ConflictOutput)
+    
+    prompt = PromptTemplate.from_template(
+        "You are an expert fact-checker for an email assistant agent.\n"
+        "Your task is to analyze the following retrieved email excerpts (evidence) and detect any genuine "
+        "contradictions or conflicting information. "
+        "A contradiction occurs when two or more pieces of evidence state facts that cannot both be true "
+        "(e.g., 'interview is on Monday' vs 'interview is on Tuesday', or 'offer extended' vs 'position filled' for the same role).\n\n"
+        "Evidence:\n{evidence}\n\n"
+        "Output a structured result indicating if contradictions exist, and list them with their sources."
+    )
+    chain = prompt | structured_llm
+    
+    all_conflicts = []
+    max_retries = 2
+    
+    for batch_idx, batch_text in enumerate(batches):
+        batch_success = False
+        for attempt in range(max_retries + 1):
+            try:
+                result = chain.invoke({"evidence": batch_text})
+                if not result or not hasattr(result, "has_contradictions"):
+                    raise ValueError("LLM returned malformed structured output.")
+                
+                if result.has_contradictions and result.conflicts:
+                    all_conflicts.extend([c.model_dump() for c in result.conflicts])
+                
+                batch_success = True
+                break
+                
+            except Exception as e:
+                logger.warning(f"Conflict checker failed on batch {batch_idx + 1}, attempt {attempt + 1}: {e}")
+                if attempt == max_retries:
+                    logger.error(f"Conflict checker completely failed on batch {batch_idx + 1}.")
+        
+        # If any batch completely fails, return failure state explicitly
+        if not batch_success:
+            return {**state, "conflicts_detected": all_conflicts, "check_status": "failed"}
+            
+    logger.info(f"Conflict checker found {len(all_conflicts)} conflicts.")
+    return {**state, "conflicts_detected": all_conflicts, "check_status": "passed"}
 
 def synthesizer_node(state: AgentState) -> AgentState:
     """
