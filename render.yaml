@@ -2,6 +2,7 @@ services:
   - type: web
     name: inboxio-backend
     env: python
+    plan: free
     buildCommand: "pip install -r requirements.txt && alembic upgrade head"
     startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
@@ -32,3 +33,4 @@ databases:
   - name: inboxio-db
     databaseName: inboxio
     user: inboxio_user
+    plan: free
