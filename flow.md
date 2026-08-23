@@ -108,3 +108,8 @@
   2. Generates comprehensive answers using inline citations formatted as `[Source ID]` (e.g., `[1]`).
   3. Uses `with_structured_output(SynthesisOutput)` to enforce citations and return a separate, mapped structured list of `Citation` models for UI rendering.
   4. Prompt enforces surfacing known contradictions explicitly and prepending a disclaimer if `check_status == "failed"`.
+
+- **Task 6: Locked Eval Question Set**:
+  1. Created a fixed, permanent evaluation set (`eval/eval_questions.json`) tailored directly to the user's real ingested inbox data.
+  2. The set contains 10 rigorous queries spanning multi-hop analysis, contradiction handling (verifying no false positives), implied risk/silence deduction, and single-lookup sanity checks.
+  3. This locked set is entirely content-based and will serve as the definitive benchmark for the final evaluation script in Task 7.

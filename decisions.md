@@ -158,4 +158,7 @@
 - **Decision: Full Real Graph Completeness**:
   - *Context*: Replaced the final stub (`synthesizer_node`).
   - *Choice*: The agent graph is now fully real and functional end-to-end. (Note: `retriever_node` remains a simple pass-through stub for now, as retrieval tool logic is invoked externally or via `tool_calls` processing in a future/separate executor).
-  - *Rationale*: Validates the entire LangGraph architecture from query to final synthesized output.
+- **Decision: Realistic, Grounded Evaluation Set (Task 6)**:
+  - *Context*: Creating evaluation questions based on hypotheticals leads to guaranteed failures during live evaluation since the evidence doesn't physically exist in the database constraints (e.g., `MAX_EMAILS=25`).
+  - *Choice*: Scrapped the initial hallucinated questions. Dumped the real topics inside the user's specific Chroma dataset (Internshala, Naukri MINIs, LinkedIn, Academia) and mapped the strict evaluation categories (Multi-hop, Contradiction, Implied-risk, Single-lookup) *onto* the existing data.
+  - *Rationale*: Prevents the need to manipulate ingestion parameters or build synthetic ingestion pipelines. The agent is forced to execute complex logic against natural, messy reality (e.g., verifying that similar intern update emails don't contradict, or deducing silence when a specific company hasn't followed up).
