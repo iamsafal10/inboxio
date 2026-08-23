@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -33,7 +33,11 @@ class MemoryFact(Base):
         Text,
         nullable=False,
     )
-    source_session_id = Column(
+    fact_type = Column(
+        String(50),
+        nullable=True,
+    )
+    source = Column(
         String(255),
         nullable=True,
     )
@@ -42,9 +46,10 @@ class MemoryFact(Base):
         default=get_utc_now,
         nullable=False,
     )
-    provider = Column(
-        String(50),
-        nullable=True,
+    active = Column(
+        Boolean,
+        default=True,
+        nullable=False,
     )
     deleted_at = Column(
         DateTime(timezone=True),

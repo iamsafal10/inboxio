@@ -162,3 +162,10 @@
   - *Context*: Creating evaluation questions based on hypotheticals leads to guaranteed failures during live evaluation since the evidence doesn't physically exist in the database constraints (e.g., `MAX_EMAILS=25`).
   - *Choice*: Scrapped the initial hallucinated questions. Dumped the real topics inside the user's specific Chroma dataset (Internshala, Naukri MINIs, LinkedIn, Academia) and mapped the strict evaluation categories (Multi-hop, Contradiction, Implied-risk, Single-lookup) *onto* the existing data.
   - *Rationale*: Prevents the need to manipulate ingestion parameters or build synthetic ingestion pipelines. The agent is forced to execute complex logic against natural, messy reality (e.g., verifying that similar intern update emails don't contradict, or deducing silence when a specific company hasn't followed up).
+
+## Phase 3: Memory
+
+- **Decision: Split short-term and long-term memory**:
+  - *Context*: The agent needs to recall facts across sessions (e.g., "User prefers short answers") but also needs immediate context within a single multi-turn session.
+  - *Choice*: Created a Postgres `memory_facts` table with a boolean `active` flag for long-term durable facts. Extended the LangGraph `AgentState` with a `chat_history` list for short-term, session-scoped context.
+  - *Rationale*: Keeps the database lean by not storing every single chat turn as a durable fact, while ensuring the agent has access to both immediate conversational context and explicitly extracted long-term constraints/preferences.

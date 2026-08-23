@@ -113,3 +113,11 @@
   1. Created a fixed, permanent evaluation set (`eval/eval_questions.json`) tailored directly to the user's real ingested inbox data.
   2. The set contains 10 rigorous queries spanning multi-hop analysis, contradiction handling (verifying no false positives), implied risk/silence deduction, and single-lookup sanity checks.
   3. This locked set is entirely content-based and will serve as the definitive benchmark for the final evaluation script in Task 7.
+
+## Phase 3: Memory
+
+- **Task 1: Memory Schema**:
+  1. Designed the database schema for long-term durable memory (`MemoryFact`), including `fact_type`, `source`, and a boolean `active` flag for deletion testing.
+  2. Generated and applied Alembic migrations.
+  3. Updated the LangGraph agent state (`AgentState`) to include `chat_history` for short-term, session-scoped context.
+  4. Created DB constraint unit tests for the schema.
