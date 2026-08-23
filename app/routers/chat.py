@@ -261,9 +261,9 @@ CHAT_UI_HTML = """
             // Very simple markdown-like citation formatting
             if (text.includes('SOURCES:')) {
                 const parts = text.split('SOURCES:');
-                return parts[0].replace(/\n/g, '<br>') + '<div class="citations"><strong>Sources:</strong><br>' + parts[1].replace(/\n/g, '<br>') + '</div>';
+                return parts[0].replace(/\\n/g, '<br>') + '<div class="citations"><strong>Sources:</strong><br>' + parts[1].replace(/\\n/g, '<br>') + '</div>';
             }
-            return text.replace(/\n/g, '<br>');
+            return text.replace(/\\n/g, '<br>');
         }
 
         async function sendMessage() {
