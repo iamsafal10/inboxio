@@ -179,3 +179,8 @@
   - *Context*: Writing every session detail into long-term durable DB memory would clutter the vector space and feed the agent conflicting or irrelevant facts later.
   - *Choice*: Instructed the memory extraction LLM to be highly conservative (ignore speculative/ephemeral constraints, ignore external entity facts). Added exact string-matching deduplication against `memory_facts.fact_text` for the user.
   - *Rationale*: It is safer for the agent to miss a fact than persist a hallucinated constraint. Simple exact-match dedup is fast and effective since facts are LLM-generated and structurally consistent.
+
+- **Decision: Retrieval Approach for Long-term Facts**:
+  - *Context*: When a user asks a new question, the agent needs to know which long-term facts apply without being overwhelmed by hundreds of irrelevant facts.
+  - *Choice*: Implemented a lightweight keyword matching heuristic (stripping stopwords, matching word stems against fact text) in `memory_reader.py`. Added a fallback to inject all facts if the total count is extremely small (<= 3).
+  - *Rationale*: For the scale of personal constraints (typically 1-10 facts per user), keyword matching is O(N) fast, requires 0 LLM latency, and completely avoids the complexity of embedding generation and vector search for tiny sets of text.

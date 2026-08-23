@@ -7,6 +7,8 @@ from app.agent.nodes import (
     conflict_checker_node,
     synthesizer_node
 )
+from app.core.database import SessionLocal
+from app.agent.memory_reader import get_relevant_facts
 
 def should_loop_back(state: AgentState) -> str:
     """
@@ -59,7 +61,14 @@ def run_agent_graph(user_id: str, question: str) -> AgentState:
     Entry point to invoke the agent graph.
     Currently runs through stub nodes returning the state untouched.
     """
-    history = SESSION_HISTORY.get(user_id, [])
+    chat_history = SESSION_HISTORY.get(user_id, [])
+    
+    # Extract durable facts
+    db = SessionLocal()
+    try:
+        long_term_facts = get_relevant_facts(user_id, question, db)
+    finally:
+        db.close()
     
     initial_state = AgentState(
         user_id=user_id,
@@ -71,11 +80,13 @@ def run_agent_graph(user_id: str, question: str) -> AgentState:
         check_status="",
         final_answer=None,
         citations=[],
-        chat_history=history.copy()
+        chat_history=chat_history.copy(),
+        long_term_facts=long_term_facts
     )
     result = app_graph.invoke(initial_state)
     
     # Update short-term memory with this turn
+    history = SESSION_HISTORY.get(user_id, [])
     history.append({"role": "human", "content": question})
     if result.get("final_answer"):
         history.append({"role": "agent", "content": result["final_answer"]})

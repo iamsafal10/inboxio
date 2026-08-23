@@ -133,3 +133,10 @@
   2. Instructed the LLM (via structured outputs) to conservatively extract durable personal facts and ignore speculative or ephemeral details from the session history.
   3. Added exact-match `fact_text` deduplication logic before persisting to `memory_facts`.
   4. Wrote unit tests confirming extraction reliability and deduplication logic, as well as a live test script (`test_memory_writer_live.py`) visually demonstrating the agent ignoring non-durable details.
+
+- **Task 4: Long-term Memory Reads**:
+  1. Created `app/agent/memory_reader.py` with `get_relevant_facts(user_id, question, db)` to retrieve a user's active facts.
+  2. Implemented a lightweight keyword relevance filter (excluding stopwords) to prevent force-injecting completely irrelevant facts, with a fallback to return all facts if the user has very few stored.
+  3. Modified `AgentState` and `run_agent_graph` to inject `long_term_facts` at the start of a session.
+  4. Updated the `planner_node` prompt to strictly account for these durable long-term facts when generating sub-goals.
+  5. Wrote isolated unit tests and a live test (`test_memory_reader_live.py`) which verified the agent applying a "remote roles only" constraint to a brand new session.

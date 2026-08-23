@@ -57,6 +57,7 @@ def planner_node(state: AgentState) -> AgentState:
     if not question.strip():
         return {**state, "sub_goals": []}
     chat_history = state.get("chat_history", [])
+    long_term_facts = state.get("long_term_facts", [])
     
     formatted_history = "No prior conversation in this session."
     if chat_history:
@@ -66,13 +67,19 @@ def planner_node(state: AgentState) -> AgentState:
             lines.append(f"{role}: {msg.get('content')}")
         formatted_history = "\n".join(lines)
 
+    formatted_facts = "No durable long-term facts known for this user."
+    if long_term_facts:
+        formatted_facts = "\n".join([f"- {fact}" for fact in long_term_facts])
+
     prompt = PromptTemplate.from_template(
         "You are an expert planner for an email assistant agent.\n"
         "Your task is to break down the following user question into a small, ordered list of concrete sub-goals "
         "that need to be achieved to answer it fully.\n"
         "- If the question refers to prior context (e.g., 'what about the other one?'), use the Recent Conversation History to resolve the reference.\n"
+        "- CRITICAL: Review the Durable Long-Term Facts about this user. Your sub-goals MUST account for these constraints and preferences (e.g., if a fact says 'User only wants remote roles', ensure your sub-goals filter for remote).\n"
         "- If the question is simple and requires only looking up a single fact, return exactly one sub-goal.\n"
         "- If the question is complex, break it into logical steps (e.g. find all related threads, check latest status).\n\n"
+        "Durable Long-Term Facts:\n{long_term_facts}\n\n"
         "Recent Conversation History:\n{chat_history}\n\n"
         "User Question: {question}\n\n"
         "Output a structured list of sub_goals."
@@ -87,7 +94,8 @@ def planner_node(state: AgentState) -> AgentState:
         try:
             result = chain.invoke({
                 "question": question,
-                "chat_history": formatted_history
+                "chat_history": formatted_history,
+                "long_term_facts": formatted_facts
             })
             if not result or not hasattr(result, "sub_goals"):
                 raise ValueError("LLM returned malformed structured output.")

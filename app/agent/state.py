@@ -14,4 +14,6 @@ class AgentState(TypedDict):
     check_status: str
     final_answer: Optional[str]
     citations: List[Any]
+    # Memory context
     chat_history: List[Any]
+    long_term_facts: List[str]
