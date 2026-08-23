@@ -56,13 +56,24 @@ def planner_node(state: AgentState) -> AgentState:
     
     if not question.strip():
         return {**state, "sub_goals": []}
-        
+    chat_history = state.get("chat_history", [])
+    
+    formatted_history = "No prior conversation in this session."
+    if chat_history:
+        lines = []
+        for msg in chat_history:
+            role = "User" if msg.get("role") == "human" else "Agent"
+            lines.append(f"{role}: {msg.get('content')}")
+        formatted_history = "\n".join(lines)
+
     prompt = PromptTemplate.from_template(
         "You are an expert planner for an email assistant agent.\n"
         "Your task is to break down the following user question into a small, ordered list of concrete sub-goals "
         "that need to be achieved to answer it fully.\n"
+        "- If the question refers to prior context (e.g., 'what about the other one?'), use the Recent Conversation History to resolve the reference.\n"
         "- If the question is simple and requires only looking up a single fact, return exactly one sub-goal.\n"
         "- If the question is complex, break it into logical steps (e.g. find all related threads, check latest status).\n\n"
+        "Recent Conversation History:\n{chat_history}\n\n"
         "User Question: {question}\n\n"
         "Output a structured list of sub_goals."
     )
@@ -74,7 +85,10 @@ def planner_node(state: AgentState) -> AgentState:
     max_retries = 1
     for attempt in range(max_retries + 1):
         try:
-            result = chain.invoke({"question": question})
+            result = chain.invoke({
+                "question": question,
+                "chat_history": formatted_history
+            })
             if not result or not hasattr(result, "sub_goals"):
                 raise ValueError("LLM returned malformed structured output.")
                 
@@ -249,18 +263,29 @@ def synthesizer_node(state: AgentState) -> AgentState:
     else:
         formatted_conflicts = "No contradictions detected."
         
+    chat_history = state.get("chat_history", [])
+    formatted_history = "No prior conversation in this session."
+    if chat_history:
+        lines = []
+        for msg in chat_history:
+            role = "User" if msg.get("role") == "human" else "Agent"
+            lines.append(f"{role}: {msg.get('content')}")
+        formatted_history = "\n".join(lines)
+        
     llm = get_llm(temperature=0.0)
     structured_llm = llm.with_structured_output(SynthesisOutput)
     
     prompt = PromptTemplate.from_template(
         "You are an expert email assistant.\n"
-        "Your task is to synthesize a final answer to the user's question using ONLY the provided evidence.\n\n"
+        "Your task is to synthesize a final answer to the user's question using ONLY the provided evidence.\n"
+        "Use the Recent Conversation History to understand context and coreferences (e.g. 'what about the other one').\n\n"
         "CRITICAL RULES:\n"
         "1. Every claim MUST include an inline citation using the [Source ID] format (e.g., 'The meeting is on Tuesday [1].').\n"
         "2. All citations used MUST be mapped and returned in the structured `citations` list.\n"
         "3. If `Check Status` is 'failed', you MUST include this explicit disclaimer in your answer: 'Note: I couldn't verify the evidence for contradictions due to an internal error.'\n"
         "4. If `Contradictions` lists any conflicts, you MUST surface them explicitly (e.g., 'I found conflicting info: [Sender A] says X, but [Sender B] says Y.'). NEVER silently pick a side.\n"
         "5. If the evidence is thin or does not answer the question, state it plainly rather than guessing.\n\n"
+        "Recent Conversation History:\n{chat_history}\n\n"
         "Question: {question}\n\n"
         "Check Status: {check_status}\n\n"
         "Contradictions:\n{conflicts}\n\n"
@@ -273,6 +298,7 @@ def synthesizer_node(state: AgentState) -> AgentState:
     try:
         result = chain.invoke({
             "question": question,
+            "chat_history": formatted_history,
             "check_status": check_status,
             "conflicts": formatted_conflicts,
             "evidence": full_evidence

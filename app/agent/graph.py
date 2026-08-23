@@ -50,11 +50,17 @@ def build_graph():
 # Compile graph once at startup
 app_graph = build_graph()
 
+# In-memory store for session context.
+# Key: user_id (for session scoping), Value: List of {"role": str, "content": str}
+SESSION_HISTORY = {}
+
 def run_agent_graph(user_id: str, question: str) -> AgentState:
     """
     Entry point to invoke the agent graph.
     Currently runs through stub nodes returning the state untouched.
     """
+    history = SESSION_HISTORY.get(user_id, [])
+    
     initial_state = AgentState(
         user_id=user_id,
         question=question,
@@ -64,6 +70,21 @@ def run_agent_graph(user_id: str, question: str) -> AgentState:
         conflicts_detected=[],
         check_status="",
         final_answer=None,
-        citations=[]
+        citations=[],
+        chat_history=history.copy()
     )
-    return app_graph.invoke(initial_state)
+    result = app_graph.invoke(initial_state)
+    
+    # Update short-term memory with this turn
+    history.append({"role": "human", "content": question})
+    if result.get("final_answer"):
+        history.append({"role": "agent", "content": result["final_answer"]})
+    else:
+        history.append({"role": "agent", "content": "I couldn't generate an answer."})
+        
+    # Cap history to last 6 messages (3 turns)
+    if len(history) > 6:
+        history = history[-6:]
+        
+    SESSION_HISTORY[user_id] = history
+    return result

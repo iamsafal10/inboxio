@@ -1,5 +1,6 @@
 import pytest
 import unittest
+import uuid
 from sqlalchemy.exc import IntegrityError
 from app.models.memory_fact import MemoryFact
 from app.models.user import User
@@ -14,7 +15,8 @@ class TestMemorySchema(unittest.TestCase):
         self.db.close()
 
     def test_memory_fact_creation(self):
-        user = User(email="memorytest_schema@example.com", hashed_password="fake")
+        unique_email = f"memorytest_schema_{uuid.uuid4()}@example.com"
+        user = User(email=unique_email, hashed_password="fake")
         self.db.add(user)
         self.db.commit()
         
@@ -48,7 +50,8 @@ class TestMemorySchema(unittest.TestCase):
         self.db.rollback()
 
     def test_memory_fact_requires_fact_text(self):
-        user = User(email="memorytest2_schema@example.com", hashed_password="fake")
+        unique_email = f"memorytest2_schema_{uuid.uuid4()}@example.com"
+        user = User(email=unique_email, hashed_password="fake")
         self.db.add(user)
         self.db.commit()
         

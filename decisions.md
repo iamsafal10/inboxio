@@ -169,3 +169,8 @@
   - *Context*: The agent needs to recall facts across sessions (e.g., "User prefers short answers") but also needs immediate context within a single multi-turn session.
   - *Choice*: Created a Postgres `memory_facts` table with a boolean `active` flag for long-term durable facts. Extended the LangGraph `AgentState` with a `chat_history` list for short-term, session-scoped context.
   - *Rationale*: Keeps the database lean by not storing every single chat turn as a durable fact, while ensuring the agent has access to both immediate conversational context and explicitly extracted long-term constraints/preferences.
+
+- **Decision: Short-term Session Window Size**:
+  - *Context*: Feeding unbounded chat history into the planner/synthesizer LLM prompts will quickly exhaust the LLM context window and API rate limits (as seen with Gemini `RESOURCE_EXHAUSTED` errors).
+  - *Choice*: Hardcapped the `SESSION_HISTORY` window at 6 messages (3 full QA turns) per user.
+  - *Rationale*: 3 turns is sufficient for resolving immediate coreferences (e.g., "what about the other one", "what was the date on that?"). It ensures minimal token usage per turn while avoiding cross-session memory drift where old context confuses the planner's sub-goal extraction.

@@ -121,3 +121,9 @@
   2. Generated and applied Alembic migrations.
   3. Updated the LangGraph agent state (`AgentState`) to include `chat_history` for short-term, session-scoped context.
   4. Created DB constraint unit tests for the schema.
+
+- **Task 2: Short-term Memory**:
+  1. Implemented a session history store (`SESSION_HISTORY`) in `graph.py` keyed by `user_id` to persist conversation turns across agent invocations.
+  2. Modified `planner_node` and `synthesizer_node` to inject the `chat_history` into their prompts, enabling the agent to resolve conversational references (e.g., "what about the other one?").
+  3. Applied a rolling window cap of 6 messages (3 full turns) to prevent unbounded context growth and API exhaustion.
+  4. Added `test_short_term_memory.py` to assert memory accumulation, capping, and cross-user isolation.
