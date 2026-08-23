@@ -30,14 +30,29 @@ class SearchRequest(BaseModel):
 
 @router.get("/oauth/connect")
 def connect_gmail(current_user: User = Depends(get_current_user)) -> dict:
-    """Generate and return the Google OAuth consent URL for the authenticated user."""
+    """Generate and return the Google OAuth consent URL for the authenticated user (Read Only)."""
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Google OAuth credentials are not configured in environment (.env)",
         )
 
-    auth_url = get_authorization_url(user_id=current_user.id)
+    auth_url = get_authorization_url(user_id=current_user.id, include_send_scope=False)
+    return {
+        "authorization_url": auth_url,
+    }
+
+
+@router.get("/oauth/connect/send")
+def connect_gmail_send(current_user: User = Depends(get_current_user)) -> dict:
+    """Generate and return the Google OAuth consent URL requesting the send scope explicitly."""
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth credentials are not configured in environment (.env)",
+        )
+
+    auth_url = get_authorization_url(user_id=current_user.id, include_send_scope=True)
     return {
         "authorization_url": auth_url,
     }
@@ -63,7 +78,7 @@ def oauth_callback(
             detail="Missing required code or state parameter in OAuth callback",
         )
 
-    user_id, code_verifier = decode_oauth_state(state)
+    user_id, code_verifier, intent = decode_oauth_state(state)
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -76,6 +91,7 @@ def oauth_callback(
             code=code,
             state=state,
             code_verifier=code_verifier,
+            include_send_scope=(intent == "send"),
         )
     except Exception as exc:
         raise HTTPException(
@@ -91,7 +107,11 @@ def oauth_callback(
     if credentials.expiry:
         user.gmail_token_expiry = credentials.expiry
 
-    user.gmail_connected = True
+    if intent == "send":
+        user.gmail_send_scope_granted = True
+    else:
+        user.gmail_connected = True
+        
     db.commit()
     db.refresh(user)
 

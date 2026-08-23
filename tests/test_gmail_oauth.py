@@ -53,7 +53,7 @@ class TestGmailOAuth(unittest.TestCase):
         encoded_state = encode_oauth_state(user_id=user_id, code_verifier=verifier)
         self.assertIsInstance(encoded_state, str)
 
-        extracted_user_id, extracted_verifier = decode_oauth_state(encoded_state)
+        extracted_user_id, extracted_verifier, _ = decode_oauth_state(encoded_state)
         self.assertEqual(extracted_user_id, user_id)
         self.assertEqual(extracted_verifier, verifier)
 
@@ -71,7 +71,7 @@ class TestGmailOAuth(unittest.TestCase):
 
         # Confirm state decodes to original user_id and non-empty code_verifier
         state_str = params["state"][0]
-        decoded_user, decoded_verifier = decode_oauth_state(state_str)
+        decoded_user, decoded_verifier, _ = decode_oauth_state(state_str)
         self.assertEqual(decoded_user, user_id)
         self.assertIsNotNone(decoded_verifier)
         self.assertEqual(len(decoded_verifier), 128)

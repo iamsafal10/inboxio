@@ -163,3 +163,9 @@
   1. Built `app/services/critique.py` with `self_critique(draft, profile_chunks_used)` to catch hallucinated facts.
   2. Implemented strict LLM exception handling (a malformed JSON output or network error explicitly raises a `RuntimeError` rather than silently passing the draft as "clean").
   3. Validated through `test_critique.py` that false claims are accurately flagged and that exceptions bubble up correctly.
+
+- **Task 4: Send Email Tool & Explicit Send Scope**:
+  1. Updated the OAuth PKCE flow to explicitly encode the authorization `intent` ("read" vs "send") directly into the tamper-proof state token.
+  2. Built `GET /gmail/oauth/connect/send` to request the escalated `gmail.send` scope.
+  3. Created the `EmailSendLog` database model to permanently audit all outbound email attempts (both successful and failed).
+  4. Engineered `app/services/gmail_sender.py` which explicitly fails if the send scope isn't granted, dispatches the email via the Gmail API, and logs the outcome to the DB.

@@ -1,62 +1,44 @@
 import os
-import json
-from app.agent.nodes import conflict_checker_node
-from app.agent.state import AgentState
+import sys
+from app.core.database import SessionLocal
+from app.models.user import User
+from app.models.email_send_log import EmailSendLog
+from app.services.gmail_sender import send_email
 
-def print_result(desc, state):
-    print(f"\n=== {desc} ===")
-    print(f"Check Status: {state['check_status']}")
-    print(f"Conflicts Detected: {json.dumps(state['conflicts_detected'], indent=2)}")
-    print("="*40)
-
-def verify_live():
-    # 1. Planted contradiction
-    state1 = AgentState(
-        user_id="test", question="", sub_goals=[], tool_calls=[], final_answer=None,
-        retrieved_chunks=[
-            {"text": "I interviewed the candidate. We should definitely extend an offer.", "metadata": {"sender": "alice@company.com", "subject": "Interview Feedback", "sent_at": "2026-08-01"}},
-            {"text": "I interviewed the candidate. We should reject them immediately.", "metadata": {"sender": "bob@company.com", "subject": "Interview Feedback", "sent_at": "2026-08-01"}},
-        ],
-        conflicts_detected=[],
-        check_status=""
-    )
-    res1 = conflict_checker_node(state1)
-    print_result("TEST 1: Planted Contradiction", res1)
-
-    # 2. No contradiction
-    state2 = AgentState(
-        user_id="test", question="", sub_goals=[], tool_calls=[], final_answer=None,
-        retrieved_chunks=[
-            {"text": "We received your application for the Software Engineer role.", "metadata": {"sender": "careers@company.com", "subject": "App Received", "sent_at": "2026-08-01"}},
-            {"text": "Your resume is under review by the hiring manager.", "metadata": {"sender": "recruiter@company.com", "subject": "Update", "sent_at": "2026-08-02"}},
-        ],
-        conflicts_detected=[],
-        check_status=""
-    )
-    res2 = conflict_checker_node(state2)
-    print_result("TEST 2: No Contradiction", res2)
-
-    # 3. Simulated API Failure
-    import app.agent.nodes
-    original_get_llm = app.agent.nodes.get_llm
-    
-    def fake_get_llm(temperature):
-        # Return a model with a fake provider/URL that will fail
-        from langchain_openai import ChatOpenAI
-        return ChatOpenAI(model="stealth/ox-alpha", api_key="fake", base_url="http://localhost:9999/does-not-exist", max_retries=0)
+def main(email: str):
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        print(f"User {email} not found in DB.")
+        sys.exit(1)
         
-    app.agent.nodes.get_llm = fake_get_llm
+    print(f"Attempting to send an email for {email}...")
     
-    state3 = AgentState(
-        user_id="test", question="", sub_goals=[], tool_calls=[], final_answer=None,
-        retrieved_chunks=[{"text": "Some text", "metadata": {}}],
-        conflicts_detected=[],
-        check_status=""
-    )
-    res3 = conflict_checker_node(state3)
-    print_result("TEST 3: Simulated API Failure", res3)
+    recipient = email # send to self
+    subject = "Phase 4 Task 4 Test"
+    draft = "This is a test email sent from the Inboxio agent."
     
-    app.agent.nodes.get_llm = original_get_llm
-
+    if not user.gmail_send_scope_granted:
+        print("ERROR: User has not granted the send scope.")
+        print("Please hit http://127.0.0.1:8000/gmail/oauth/connect/send in your browser, grant the permission, and try again.")
+        sys.exit(1)
+        
+    try:
+        result = send_email(user.id, recipient, subject, draft, db)
+        print("SUCCESS:", result)
+        
+        # Verify log
+        logs = db.query(EmailSendLog).filter(EmailSendLog.user_id == user.id).order_by(EmailSendLog.created_at.desc()).first()
+        print(f"Latest DB Log Status: {logs.status}")
+        
+    except Exception as e:
+        print(f"FAILED: {e}")
+        logs = db.query(EmailSendLog).filter(EmailSendLog.user_id == user.id).order_by(EmailSendLog.created_at.desc()).first()
+        if logs:
+            print(f"Latest DB Log Status: {logs.status}, Error: {logs.error_message}")
+        
 if __name__ == "__main__":
-    verify_live()
+    if len(sys.argv) < 2:
+        print("Usage: python verify_task4.py <your_email>")
+        sys.exit(1)
+    main(sys.argv[1])

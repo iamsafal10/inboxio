@@ -28,24 +28,24 @@ def generate_code_verifier(length: int = 128) -> str:
     return "".join(secrets.choice(chars) for _ in range(length))
 
 
-def encode_oauth_state(user_id: str, code_verifier: str) -> str:
-    """Encrypt user_id and PKCE code_verifier into a tamper-proof state string."""
-    payload = json.dumps({"user_id": user_id, "code_verifier": code_verifier})
+def encode_oauth_state(user_id: str, code_verifier: str, intent: str = "read") -> str:
+    """Encrypt user_id, PKCE code_verifier, and intent into a tamper-proof state string."""
+    payload = json.dumps({"user_id": user_id, "code_verifier": code_verifier, "intent": intent})
     return encrypt_token(payload).decode("utf-8")
 
 
-def decode_oauth_state(state: str) -> Tuple[str, Optional[str]]:
-    """Decrypt state parameter to extract user_id and PKCE code_verifier."""
+def decode_oauth_state(state: str) -> Tuple[str, Optional[str], str]:
+    """Decrypt state parameter to extract user_id, PKCE code_verifier, and intent."""
     try:
         decrypted = decrypt_token(state.encode("utf-8"))
         if decrypted:
             data = json.loads(decrypted)
             if isinstance(data, dict) and "user_id" in data:
-                return data["user_id"], data.get("code_verifier")
+                return data["user_id"], data.get("code_verifier"), data.get("intent", "read")
     except Exception:
         pass
     # Fallback if state was passed as raw user_id
-    return state, None
+    return state, None, "read"
 
 
 def _get_client_config() -> Dict[str, Any]:
@@ -83,7 +83,8 @@ def get_authorization_url(user_id: str, include_send_scope: bool = False) -> str
         scopes.extend(SEND_SCOPES)
 
     code_verifier = generate_code_verifier()
-    state = encode_oauth_state(user_id=user_id, code_verifier=code_verifier)
+    intent = "send" if include_send_scope else "read"
+    state = encode_oauth_state(user_id=user_id, code_verifier=code_verifier, intent=intent)
 
     flow = build_flow(scopes=scopes, state=state)
     flow.code_verifier = code_verifier
@@ -108,7 +109,7 @@ def exchange_code_for_tokens(
         scopes.extend(SEND_SCOPES)
 
     if code_verifier is None:
-        _, extracted_verifier = decode_oauth_state(state)
+        _, extracted_verifier, _ = decode_oauth_state(state)
         code_verifier = extracted_verifier
 
     flow = build_flow(scopes=scopes, state=state)
