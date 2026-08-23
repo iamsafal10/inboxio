@@ -27,7 +27,7 @@ class SendRequest(BaseModel):
 @router.get("/ui", response_class=HTMLResponse)
 def get_cold_email_ui(request: Request):
     """Serve a basic HTML page for the cold email approval gate."""
-    return templates.TemplateResponse("cold_email.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="cold_email.html")
 
 @router.post("/api/draft")
 def api_draft_cold_email(

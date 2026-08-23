@@ -318,14 +318,16 @@ def get_chat_ui():
 
 
 from app.services.domain_filter import is_career_question
+from app.agent.graph import run_agent_graph
 
 @router.post("/chat")
 def chat_endpoint(payload: ChatRequest, current_user: User = Depends(get_current_user)):
-    """Placeholder chat endpoint. 
-    
-    Phase 2 Note: Replace this placeholder echo logic with real agent/LLM logic.
-    """
+    """Chat endpoint using the LangGraph agent."""
     if not is_career_question(payload.message):
         return {"response": "I can only answer questions related to your career, job applications, or interviews."}
         
-    return {"response": f"Agent not built yet. You said: {payload.message}"}
+    state = run_agent_graph(str(current_user.id), payload.message)
+    
+    answer = state.get("final_answer") or "Sorry, I couldn't generate a response."
+    
+    return {"response": answer}
