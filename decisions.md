@@ -220,3 +220,24 @@
   - *Context*: We needed to guarantee that a cold email draft could never be sent without a human explicitly reviewing it, and importantly, explicitly acknowledging any hallucination warnings flagged by the `self_critique` step.
   - *Choice*: Instead of relying solely on the UI to prevent a click, the system stores the draft and its critique flags in a `ColdEmailDraft` database table during the generation step. When the send API is called, the server validates the DB record. If flags exist, it requires an explicit `acknowledge_flags=True` boolean in the payload. 
   - *Rationale*: A determined client or API scraper cannot bypass the critique warning by simply hitting the `/send` endpoint with raw text. The server statefully enforces that the draft went through the pipeline and that the warnings were structurally acknowledged.
+
+- **Decision: End-to-End Self-Critique Proof (Phase 4 Task 6)**:
+  - *Context*: We needed absolute certainty that the strict self-critique and approval gate mechanisms were load-bearing before concluding Phase 4.
+  - *Choice*: Ran an automated end-to-end script (`verify_task6.py`) that forced the agent to draft a cold email containing a blatant hallucination ("Chief AI Officer at Google"). 
+  - *Rationale*: By proving the critique node caught the lie and the server rejected the unacknowledged payload, we proved the system is fundamentally safe against rogue LLM generations. This marked the official completion of Phase 4.
+
+## Phase 6: Polish, Deployment, Docs
+- **Decision: Consolidated Render Deployment (Phase 6 Task 1)**:
+  - *Context*: Required deploying the backend, frontend, and Postgres to free-tier hosting.
+  - *Choice*: Used a single `render.yaml` Blueprint to deploy the FastAPI app and Postgres DB on Render. Avoided Vercel entirely since the frontend is served via Jinja templates directly from the FastAPI backend.
+  - *Rationale*: Simplifies the deployment topology. Splitting into Vercel was unnecessary and would break FastAPI's template/session serving without significant refactoring.
+
+- **Decision: Accept Ephemeral Chroma Persistence**:
+  - *Context*: Render's free tier does not support persistent disks. Our ChromaDB uses local SQLite/parquet files.
+  - *Choice*: Explicitly accepted that the vector database will be wiped whenever the Render free-tier instance sleeps or restarts.
+  - *Rationale*: For a portfolio/demo deployment, re-ingesting 25 emails is trivial. Upgrading to a paid Render disk or migrating to a cloud vector database (like Pinecone) would introduce unnecessary cost/complexity for a demo environment.
+
+- **Decision: Switch Primary Provider to Groq**:
+  - *Context*: The original Gemini API exhausted its free quota, and the alternative OpenRouter stealth model (`ox-alpha`) hit severe upstream global rate limits.
+  - *Choice*: Switched `LLM_PROVIDER=groq` to use `llama3-8b-8192` as the primary production model.
+  - *Rationale*: Groq offers incredibly fast inference and generous rate limits, allowing the multi-step LangGraph orchestration to complete without timeout bottlenecks, ensuring a smooth deployed experience.

@@ -169,3 +169,17 @@
   2. Built `GET /gmail/oauth/connect/send` to request the escalated `gmail.send` scope.
   3. Created the `EmailSendLog` database model to permanently audit all outbound email attempts (both successful and failed).
   4. Engineered `app/services/gmail_sender.py` which explicitly fails if the send scope isn't granted, dispatches the email via the Gmail API, and logs the outcome to the DB.
+
+- **Task 6: End-to-End Self-Critique Proof Test**:
+  1. Wrote and executed `verify_task6.py` (and its faster `fast_verify_task6.py` equivalent) to prove the full Phase 4 pipeline.
+  2. The test deliberately planted a false claim ("Chief AI Officer at Google") in the generated draft.
+  3. Confirmed that the `self_critique` node successfully intercepted the hallucinated claim and flagged it.
+  4. Confirmed the server-side approval gate strictly rejected the send attempt until `acknowledge_flags=True` was explicitly passed.
+  5. This successful end-to-end proof marked the official completion of Phase 4.
+
+## Phase 6: Polish, Deployment, Docs
+- **Task 1: Deploy Backend + Frontend + Postgres**:
+  1. Created `render.yaml` infrastructure-as-code to automatically provision a FastAPI Web Service and a Managed PostgreSQL database on Render's free tier.
+  2. Determined that the frontend did not require a separate Vercel deployment, as the minimal UI is natively served via FastAPI Jinja templates.
+  3. Acknowledged and accepted the ChromaDB ephemeral filesystem risk for this demo deployment (Chroma data resets on server sleep).
+  4. Switched the primary deployed LLM provider to `groq` (`llama3-8b-8192`) due to restrictive quota limits on the original Gemini provider.
