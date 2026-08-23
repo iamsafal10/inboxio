@@ -189,3 +189,9 @@
   - *Context*: Validating that the entire short/long-term memory system is load-bearing, not decorative.
   - *Choice*: Wrote `test_memory_deletion_live.py` which seeds a constraint fact, invokes the agent graph, deletes the fact, and re-invokes the graph, printing the LLM's outputs side-by-side. 
   - *Rationale*: Confirms end-to-end that the LLM materially changes its plan/tone/answer based on the presence vs absence of a specific database row, verifying the core objective of Phase 3.
+
+## Phase 4: Cold Email Generation
+- **Decision: Profile Schema & Separate Vector Collection**:
+  - *Context*: The agent needs deep grounding in the user's background and writing style to draft high-quality emails.
+  - *Choice*: Added a `profiles` table to store raw text (resume, career info, writing samples) and created a dedicated `inboxio_profile_<user_id>` Chroma collection.
+  - *Rationale*: Isolating profile chunks from the general email index (`inboxio_user_<user_id>`) prevents profile data from polluting standard semantic searches. It allows the agent to specifically query "profile context" when drafting.

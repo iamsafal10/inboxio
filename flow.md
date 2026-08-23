@@ -146,3 +146,9 @@
   2. Built an automated `pytest` (`test_memory_deletion.py`) which asserts that deleting a fact correctly alters the data injected into the agent graph's state.
   3. Built a live verification script (`test_memory_deletion_live.py`) to run side-by-side agent invocations: one with a seeded fact ("User hates AI and wants traditional web dev") and one after deleting it.
   4. The side-by-side run proved that the presence vs absence of the fact tangibly changed the structure and constraints of the agent's generated answer, confirming memory is load-bearing. This officially marks Phase 3 as complete!
+
+## Phase 4: Cold Email Generation
+- **Task 1: Profile Page & Embeddings**:
+  1. Built `app/routers/profile.py` containing a minimal HTML UI and endpoints to save/load a user's resume, career info, and writing samples.
+  2. Created `app/services/profile_embedder.py` to chunk the profile text and embed it into a dedicated, user-isolated ChromaDB collection (`inboxio_profile_<user_id>`).
+  3. Validated proper functionality and collection isolation via `test_profile.py` with 100% test coverage.
