@@ -140,3 +140,9 @@
   3. Modified `AgentState` and `run_agent_graph` to inject `long_term_facts` at the start of a session.
   4. Updated the `planner_node` prompt to strictly account for these durable long-term facts when generating sub-goals.
   5. Wrote isolated unit tests and a live test (`test_memory_reader_live.py`) which verified the agent applying a "remote roles only" constraint to a brand new session.
+
+- **Task 5: Long-term Memory Invalidation (Proof Test)**:
+  1. Implemented a `delete_memory_fact` function in `memory_writer.py` to allow the removal of durable facts from the database.
+  2. Built an automated `pytest` (`test_memory_deletion.py`) which asserts that deleting a fact correctly alters the data injected into the agent graph's state.
+  3. Built a live verification script (`test_memory_deletion_live.py`) to run side-by-side agent invocations: one with a seeded fact ("User hates AI and wants traditional web dev") and one after deleting it.
+  4. The side-by-side run proved that the presence vs absence of the fact tangibly changed the structure and constraints of the agent's generated answer, confirming memory is load-bearing. This officially marks Phase 3 as complete!

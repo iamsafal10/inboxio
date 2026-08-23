@@ -83,7 +83,24 @@ def extract_and_store_facts(user_id: str, db: Session) -> list[dict]:
         new_facts.append(new_fact)
         logger.info(f"Stored new fact: {f.fact_text}")
         
+        
     if new_facts:
         db.commit()
         
     return [{"fact_text": nf.fact_text, "fact_type": nf.fact_type} for nf in new_facts]
+
+def delete_memory_fact(fact_id: str, user_id: str, db: Session) -> bool:
+    """
+    Deletes a specific memory fact for the user. Returns True if deleted, False if not found.
+    """
+    fact = db.query(MemoryFact).filter(
+        MemoryFact.id == fact_id,
+        MemoryFact.user_id == user_id
+    ).first()
+    
+    if fact:
+        db.delete(fact)
+        db.commit()
+        logger.info(f"Deleted memory fact ID {fact_id} for user {user_id}")
+        return True
+    return False

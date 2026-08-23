@@ -184,3 +184,8 @@
   - *Context*: When a user asks a new question, the agent needs to know which long-term facts apply without being overwhelmed by hundreds of irrelevant facts.
   - *Choice*: Implemented a lightweight keyword matching heuristic (stripping stopwords, matching word stems against fact text) in `memory_reader.py`. Added a fallback to inject all facts if the total count is extremely small (<= 3).
   - *Rationale*: For the scale of personal constraints (typically 1-10 facts per user), keyword matching is O(N) fast, requires 0 LLM latency, and completely avoids the complexity of embedding generation and vector search for tiny sets of text.
+
+- **Decision: Memory Deletion Proof Test**:
+  - *Context*: Validating that the entire short/long-term memory system is load-bearing, not decorative.
+  - *Choice*: Wrote `test_memory_deletion_live.py` which seeds a constraint fact, invokes the agent graph, deletes the fact, and re-invokes the graph, printing the LLM's outputs side-by-side. 
+  - *Rationale*: Confirms end-to-end that the LLM materially changes its plan/tone/answer based on the presence vs absence of a specific database row, verifying the core objective of Phase 3.
