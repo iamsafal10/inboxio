@@ -174,3 +174,8 @@
   - *Context*: Feeding unbounded chat history into the planner/synthesizer LLM prompts will quickly exhaust the LLM context window and API rate limits (as seen with Gemini `RESOURCE_EXHAUSTED` errors).
   - *Choice*: Hardcapped the `SESSION_HISTORY` window at 6 messages (3 full QA turns) per user.
   - *Rationale*: 3 turns is sufficient for resolving immediate coreferences (e.g., "what about the other one", "what was the date on that?"). It ensures minimal token usage per turn while avoiding cross-session memory drift where old context confuses the planner's sub-goal extraction.
+
+- **Decision: Extraction Conservatism and Deduplication**:
+  - *Context*: Writing every session detail into long-term durable DB memory would clutter the vector space and feed the agent conflicting or irrelevant facts later.
+  - *Choice*: Instructed the memory extraction LLM to be highly conservative (ignore speculative/ephemeral constraints, ignore external entity facts). Added exact string-matching deduplication against `memory_facts.fact_text` for the user.
+  - *Rationale*: It is safer for the agent to miss a fact than persist a hallucinated constraint. Simple exact-match dedup is fast and effective since facts are LLM-generated and structurally consistent.

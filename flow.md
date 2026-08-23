@@ -127,3 +127,9 @@
   2. Modified `planner_node` and `synthesizer_node` to inject the `chat_history` into their prompts, enabling the agent to resolve conversational references (e.g., "what about the other one?").
   3. Applied a rolling window cap of 6 messages (3 full turns) to prevent unbounded context growth and API exhaustion.
   4. Added `test_short_term_memory.py` to assert memory accumulation, capping, and cross-user isolation.
+
+- **Task 3: Long-term Memory Writes**:
+  1. Created `app/agent/memory_writer.py` containing `extract_and_store_facts(user_id, db)`.
+  2. Instructed the LLM (via structured outputs) to conservatively extract durable personal facts and ignore speculative or ephemeral details from the session history.
+  3. Added exact-match `fact_text` deduplication logic before persisting to `memory_facts`.
+  4. Wrote unit tests confirming extraction reliability and deduplication logic, as well as a live test script (`test_memory_writer_live.py`) visually demonstrating the agent ignoring non-durable details.
