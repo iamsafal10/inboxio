@@ -1,0 +1,40 @@
+Running Q1: I received an email about MCube AI hiring a Backend Development intern. Did Internshala also send me an email about 'Web Development' internships, and if so, which one arrived first?
+
+--- RETRIEVED CHUNKS ---
+Sender: Google <noreply-accounts@google.com>, Subject: You shared some Google Account data with Internshala, Date: 2026-08-13T06:26:28+00:00
+Content: Keep track of your Google Account data
+
+
+
+i.am.safaltripathi@gmail.com
+
+ 
+
+<!--[if !mso]><!-...
+-
+Sender: LinkedIn <jobs-noreply@linkedin.com>, Subject: Safal, your application was sent to Flam, Date: 2026-08-07T23:24:34+00:00
+Content: ML Engineering Intern
+Daice Labs
+India
+Apply with resume & profile
+View job: https://www.linkedi...
+-
+Sender: LinkedIn <messages-noreply@linkedin.com>, Subject: Learning Spotlight: Our Freshest AI Courses, Date: 2026-08-10T22:34:32+00:00
+Content: to-Day Workflows for Productivity
+
+
+Learn how to turn AI from a reactive chatbot into a trusted “...
+-
+Sender: MyEdit <MyEdit@news.cyberlinkmember.com>, Subject: [Updates] AI Cinematic Shorts, AI Replace with Ref. Image, Voice Clone, Date: 2026-08-13T15:10:57+00:00
+Content: ibe from our emails.  My Account |  Privacy Policy |  Support Center Copyright© 2026 CyberLink Corp....
+-
+
+--- CONFLICTS ---
+No conflicts detected.
+
+--- FINAL ANSWER ---
+Based on the available evidence, I could not find any email from Internshala about 'Web Development' internships in your inbox. The only Internshala-related message present is a Google account notification confirming you used "Sign in with Google" to log into Internshala on 13 August at 11:56 — it contains no internship listings at all [1].
+
+Additionally, none of the other emails in the evidence mention MCube AI or a Backend Development internship either — the remaining messages are a LinkedIn application confirmation for ML/AI roles [2], a LinkedIn learning spotlight on AI courses [3], and a MyEdit/CyberLink product update [4].
+
+Since neither email referenced in your question appears in the provided evidence, I cannot determine which one arrived first. I'd rather state this plainly than guess — if these emails exist, they may not have been included in the search results for this query.

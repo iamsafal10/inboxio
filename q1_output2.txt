@@ -1,0 +1,160 @@
+Running Q1: I received an email about MCube AI hiring a Backend Development intern. Did Internshala also send me an email about 'Web Development' internships, and if so, which one arrived first?
+
+--- SUB GOALS ---
+["Locate the email from MCube AI about the Backend Development internship and record its exact arrival date/time (this role matches the user's preference for backend software engineering positions).", "Search the inbox for any email from Internshala regarding 'Web Development' internships and record its exact arrival date/time if it exists.", "Compare the arrival timestamps of both emails and report whether the Internshala 'Web Development' email exists and which of the two arrived first."]
+
+--- TOOL CALLS ---
+[{'tool_name': 'search_by_sender', 'query': 'MCube AI', 'start_date': '', 'end_date': ''}, {'tool_name': 'search_by_sender', 'query': 'Internshala', 'start_date': '', 'end_date': ''}, {'tool_name': 'semantic_search', 'query': '', 'start_date': '', 'end_date': ''}]
+
+--- RETRIEVED CHUNKS ---
+Sender: Internshala <onlinedegree@mail.internshala.com>, Subject: Update: 1 unread update on Online MBA program, Date: 2026-08-21T13:12:37+00:00
+Content: Chandigarh University MBA Hi Safal, Why should your career have to pause while you pursue your next ...
+-
+Sender: Internshala Trainings <jos@mail.internshala.com>, Subject: Update: You’ve got 1 update that can level up your profile, Date: 2026-08-20T19:16:27+00:00
+Content: Internshala Trainings #outlook a { padding:0; } body { width:100%!important; margin:0; padding:0; -w...
+-
+Sender: Internshala <student@internshala.com>, Subject: Your profile is a perfect match for these 'Web Development' internships, Date: 2026-08-20T13:53:36+00:00
+Content: Safal, earn high stipend in your preferred field and location. Apply for
+free on Internshala
+&nbsp...
+-
+Sender: Internshala <student@internshala.com>, Subject: Your profile is a perfect match for these 'Web Development' internships, Date: 2026-08-20T13:53:36+00:00
+Content: ays ago
+
+
+
+
+
+
+
+
+
+
+ Job offer upto ₹ 4.8LPA post internship
+
+
+ Apply now
+
+
+
+
+
+
+...
+-
+Sender: Internshala <student@internshala.com>, Subject: Your profile is a perfect match for these 'Web Development' internships, Date: 2026-08-20T13:53:36+00:00
+Content: ring
+
+
+
+
+
+ Web Development
+
+
+
+
+
+
+
+ Women First India Foundation
+
+
+
+
+
+ Work From ...
+-
+Sender: Internshala <student@internshala.com>, Subject: Your profile is a perfect match for these 'Web Development' internships, Date: 2026-08-20T13:53:36+00:00
+Content: nternships
+
+
+
+
+
+
+
+
+ Get our App
+
+
+ Stay updated with latest opportunities
+
+
+
+
+
+
+...
+-
+Sender: Internshala Trainings <jos@mail.internshala.com>, Subject: Update: You’ve got 1 update that can level up your profile, Date: 2026-08-20T13:42:37+00:00
+Content: Internshala Trainings #outlook a { padding:0; } body { width:100%!important; margin:0; padding:0; -w...
+-
+Sender: Internshala <student@internshala.com>, Subject: MCube AI is hiring Backend Development intern and your profile matches, Date: 2026-08-19T13:53:45+00:00
+Content: Safal, earn high stipend in your preferred field and location. Apply for
+free on Internshala
+&nbsp...
+-
+Sender: Internshala <student@internshala.com>, Subject: MCube AI is hiring Backend Development intern and your profile matches, Date: 2026-08-19T13:53:45+00:00
+Content: 
+
+
+
+
+
+ Today
+
+
+
+
+
+
+
+
+
+
+ Job offer upto ₹ 10LPA post internship
+
+
+ Apply now
+
+...
+-
+Sender: Internshala <student@internshala.com>, Subject: MCube AI is hiring Backend Development intern and your profile matches, Date: 2026-08-19T13:53:45+00:00
+Content: 
+
+
+
+
+
+
+
+
+
+ Few hours ago
+
+
+
+
+
+
+
+
+
+
+ Job offer post internship
+
+
+ Apply now
+...
+-
+
+--- CONFLICTS ---
+No conflicts detected.
+
+--- FINAL ANSWER ---
+Yes — Internshala did send you an email about 'Web Development' internships. It was titled "Your profile is a perfect match for these 'Web Development' internships," sent by Internshala (student@internshala.com) on August 20, 2026 at 13:53 UTC [3]. That email listed multiple matching opportunities, including Backend Development roles at NayePankh Foundation and Pledge India Foundation, among others [4].
+
+Comparing arrival times: the MCube AI email ("MCube AI is hiring Backend Development intern and your profile matches") was sent on August 19, 2026 at 13:53 UTC [8], while the 'Web Development' internships email arrived on August 20, 2026 at 13:53 UTC [3].
+
+Therefore, the MCube AI Backend Development internship email arrived first — roughly one day before the 'Web Development' internships email.

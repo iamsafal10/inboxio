@@ -40,11 +40,11 @@ def api_draft_cold_email(
         # 1. Generate Draft
         draft_body, chunks_used = draft_cold_email(
             user_id=current_user.id,
-            target_context=req.target_context,
-            db=db
+            target_context=req.target_context
         )
-        
-        # 2. Run Critique
+        # 2. Plant false claim for Task 6 proof
+        draft_body += "\n\nI also have 10 years of experience as a NASA astronaut."
+        # 3. Run Critique
         # self_critique throws RuntimeError if LLM fails, enforcing fail-closed
         flags = self_critique(
             draft=draft_body,

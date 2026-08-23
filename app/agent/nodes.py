@@ -142,6 +142,8 @@ def tool_selector_node(state: AgentState) -> AgentState:
         sub_goals_str = "\n".join(f"- {g}" for g in sub_goals)
         result = chain.invoke({"sub_goals": sub_goals_str})
         
+        if not result or not hasattr(result, "tool_calls"):
+            raise ValueError("LLM returned malformed tool selection output.")
         # Convert from Pydantic to dicts for state
         tool_calls = [tc.model_dump() for tc in result.tool_calls]
         logger.info(f"Tool selector picked: {tool_calls}")
@@ -153,13 +155,61 @@ def tool_selector_node(state: AgentState) -> AgentState:
         fallback_calls = [{"tool_name": "semantic_search", "query": g, "start_date": "", "end_date": ""} for g in sub_goals]
         return {**state, "tool_calls": fallback_calls}
 
+from app.services.retrieval_tools import (
+    search_by_sender,
+    reconstruct_thread,
+    search_by_date_range
+)
+from app.services.semantic_search import search_emails
+
 def retriever_node(state: AgentState) -> AgentState:
     """
-    Stub for retrieving evidence.
-    Will execute chosen tools to fetch chunks from Chroma.
+    Executes chosen tools to fetch chunks from Chroma or DB.
     """
     logger.info("Running retriever_node")
-    return state
+    user_id = state.get("user_id", "")
+    tool_calls = state.get("tool_calls", [])
+    
+    all_chunks = []
+    seen_ids = set()
+    
+    for tc in tool_calls:
+        tool_name = tc.get("tool_name")
+        query = tc.get("query", "")
+        start_date = tc.get("start_date", "")
+        end_date = tc.get("end_date", "")
+        
+        try:
+            chunks = []
+            if tool_name == "search_by_sender" and query:
+                chunks = search_by_sender(user_id, query)
+            elif tool_name == "reconstruct_thread" and query:
+                chunks = reconstruct_thread(user_id, query)
+            elif tool_name == "search_by_date_range" and start_date and end_date:
+                chunks = search_by_date_range(user_id, start_date, end_date, query=query if query else None)
+            elif tool_name == "semantic_search" and query:
+                chunks = search_emails(user_id, query)
+            else:
+                # Fallback to semantic search if tool name is unknown or arguments are invalid
+                if query:
+                    chunks = search_emails(user_id, query)
+                    
+            # Deduplicate chunks based on a unique identifier (e.g., text content or chunk_index + thread_id)
+            for c in chunks:
+                meta = c.get("metadata", {})
+                chunk_id = f"{meta.get('gmail_message_id', '')}_{meta.get('chunk_index', '')}"
+                if not chunk_id or chunk_id == "_":
+                    # Fallback to text hash if no IDs
+                    chunk_id = hash(c.get("text", ""))
+                    
+                if chunk_id not in seen_ids:
+                    seen_ids.add(chunk_id)
+                    all_chunks.append(c)
+                    
+        except Exception as e:
+            logger.error(f"Error executing tool {tool_name}: {e}")
+            
+    return {**state, "retrieved_chunks": all_chunks}
 
 def conflict_checker_node(state: AgentState) -> AgentState:
     """
@@ -185,8 +235,8 @@ def conflict_checker_node(state: AgentState) -> AgentState:
     
     full_text = "\n".join(formatted_evidence)
     
-    # Batching logic: chunk text if extremely large (e.g., > 30000 chars)
-    max_chars_per_batch = 30000
+    # Batching logic: chunk text if extremely large (e.g., > 200000 chars)
+    max_chars_per_batch = 200000
     batches = [full_text[i:i+max_chars_per_batch] for i in range(0, len(full_text), max_chars_per_batch)]
     
     llm = get_llm(temperature=0.0)

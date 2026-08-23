@@ -65,7 +65,7 @@ def test_successful_evaluation(mock_db, mock_paths):
          patch("eval.run_eval.answer_question_baseline") as mock_baseline, \
          patch("eval.run_eval.evaluate_answers") as mock_evaluator:
              
-        mock_agent.return_value = {"answer": "Agent answer"}
+        mock_agent.return_value = {"final_answer": "Agent answer"}
         mock_baseline.return_value = {"answer": "Baseline answer"}
         
         mock_evaluator.return_value = EvaluationResult(

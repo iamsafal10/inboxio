@@ -1,0 +1,192 @@
+[
+  {
+    "id": "Q1",
+    "question": "I received an email about MCube AI hiring a Backend Development intern. Did Internshala also send me an email about 'Web Development' internships, and if so, which one arrived first?",
+    "type": "Multi-hop",
+    "criteria": "Retrieve both Internshala emails (MCube AI and Web Dev). Compare their dates (August 19 vs August 20). Deduce and state which one arrived first, providing inline citations for both sources.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q2",
+    "question": "Naukri MINIs sent an email with advice on messaging recruiters. Did anyone actually message me on LinkedIn on the exact same day, and who was it?",
+    "type": "Multi-hop",
+    "criteria": "Retrieve the Naukri MINIs email (Aug 20), and perform a second hop to retrieve LinkedIn messages from Aug 20 (Neha Thakur). Synthesize that Neha Thakur messaged on the same day. Cite both sources.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q3",
+    "question": "Regarding the two 'Internshala Trainings' emails about an update that can level up my profile, do they state conflicting information about what the update is, or are they identical duplicate emails?",
+    "type": "Contradiction",
+    "criteria": "Retrieve both Internshala Trainings emails (received Aug 20 at 13:42 and 19:16). Use the conflict checker to determine if they contradict. Must definitively state they are duplicates/no contradiction found, and cite both.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q4",
+    "question": "Is there any conflicting information regarding the hiring company for the Backend Development intern role mentioned by Internshala? Did any email say a different company is hiring for it?",
+    "type": "Contradiction",
+    "criteria": "Retrieve the Backend Development intern email. Must state clearly that only MCube AI is mentioned and the contradiction checker found no conflicting company names.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q5",
+    "question": "Since receiving the notification that my profile is a match for the MCube AI Backend Development intern role on August 19th, have I received any direct emails from MCube AI to schedule an interview?",
+    "type": "Implied-risk / Silence",
+    "criteria": "Retrieve the MCube AI Internshala email. Search for any direct emails from MCube AI. Deduce the absence of direct communication and state this explicitly.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q6",
+    "question": "I was notified about hiring trends for Meritshot on LinkedIn. Have I received any separate emails indicating I actually applied to Meritshot, or any follow-ups from them directly?",
+    "type": "Implied-risk / Silence",
+    "criteria": "Search for Meritshot. Find the LinkedIn trends email. Reason that there are no actual application or follow-up emails from Meritshot in the inbox. State the absence.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q7",
+    "question": "According to the email from Naukri MINIs, what is the specific topic of the video they shared regarding recruiter interactions?",
+    "type": "Single-lookup Sanity Check",
+    "criteria": "Retrieve the Naukri MINIs email. Extract that the video shows a '2-message follow-up' to send after a recruiter views your profile. Cite it correctly.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q8",
+    "question": "Which platform notified me that the name 'S. Tripathi' was mentioned in a Computer Science paper?",
+    "type": "Single-lookup Sanity Check",
+    "criteria": "Retrieve the Academia Mentions email and state Academia. Cite the single source.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q9",
+    "question": "Are there any pending deadlines or tasks I need to complete for my ongoing applications?",
+    "type": "Implied-action (Phase 1 Overlap)",
+    "criteria": "Broad search for deadlines/tasks. Should retrieve zero pending tasks based on the provided dataset, or list generic tasks if any loosely match. Tests the citation pipeline on a known generic query.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  },
+  {
+    "id": "Q10",
+    "question": "Look at all emails sent by 'Internshala' or 'Internshala Trainings' on August 20th. Summarize the different opportunities or updates they provided me on that specific day.",
+    "type": "Multi-hop (Thread Synthesis)",
+    "criteria": "Retrieve the multiple emails from Aug 20 (Web Dev internships, and the Training updates). Summarize the distinct offerings and group the duplicates, citing them accurately.",
+    "agent_output": {
+      "answer": "ERROR: Planner node failed to produce valid sub-goals: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "baseline_output": {
+      "answer": "Error generating answer: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+      "llm_assessment": "Eval failed",
+      "llm_pass": false
+    },
+    "manual_agent_pass": null,
+    "manual_baseline_pass": null,
+    "manual_notes": ""
+  }
+]

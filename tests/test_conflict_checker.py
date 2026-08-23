@@ -116,8 +116,8 @@ class TestConflictCheckerNode(unittest.TestCase):
 
         state = self.base_state.copy()
         
-        # Max chars is 30,000. So we need text > 30,000 chars.
-        large_text = "A" * 35000 
+        # Max chars is 200,000. So we need text > 200,000 chars.
+        large_text = "A" * 210000 
         state["retrieved_chunks"] = [{"text": large_text, "metadata": {}}]
 
         result = conflict_checker_node(state)

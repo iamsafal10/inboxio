@@ -49,5 +49,34 @@ class TestSemanticSearch(unittest.TestCase):
         
         self.assertEqual(results, [])
 
+    @patch('app.services.semantic_search.get_embedding_function')
+    @patch('app.services.semantic_search.chroma_client')
+    def test_search_emails_default_top_k(self, mock_chroma_client, mock_get_embedding):
+        """Test search uses top_k=20 by default and retrieves all."""
+        mock_collection = MagicMock()
+        mock_chroma_client.get_collection.return_value = mock_collection
+        
+        # Mock Chroma query returning 6 results (beyond the old limit of 5)
+        docs = [f"chunk {i}" for i in range(6)]
+        metas = [{"sender": f"s{i}"} for i in range(6)]
+        distances = [0.1 * i for i in range(6)]
+        
+        mock_collection.query.return_value = {
+            "documents": [docs],
+            "metadatas": [metas],
+            "distances": [distances]
+        }
+        
+        results = search_emails("user-123", "test query")
+        
+        # Verify query call uses default top_k=20
+        mock_collection.query.assert_called_with(
+            query_texts=["test query"],
+            n_results=20
+        )
+        
+        # Verify all 6 items were returned (beyond rank 5)
+        self.assertEqual(len(results), 6)
+
 if __name__ == '__main__':
     unittest.main()

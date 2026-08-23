@@ -3,7 +3,7 @@
 from typing import List, Dict, Any
 from app.services.embedder import chroma_client, get_embedding_function
 
-def search_emails(user_id: str, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+def search_emails(user_id: str, query: str, top_k: int = 20) -> List[Dict[str, Any]]:
     """
     Embeds the query and semantically searches the user's isolated Chroma collection.
     Returns the top_k most relevant chunks with their text, metadata, and distance score.

@@ -85,7 +85,7 @@ def main():
         print("Running Agent...")
         try:
             agent_res = run_agent_graph(user_id=user_id, question=q_text)
-            agent_answer = agent_res.get("answer", "")
+            agent_answer = agent_res.get("final_answer", "")
         except Exception as e:
             agent_answer = f"ERROR: {str(e)}"
             
