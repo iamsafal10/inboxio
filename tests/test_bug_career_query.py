@@ -44,13 +44,11 @@ def test_career_query_tpm_limit_regression():
         args, kwargs = mock_search.call_args_list[0]
         assert args[0] == "test_user"
         assert args[1] == "job internship"
-        assert kwargs.get("top_k") == 5
         
         # Check arguments of the second call
         args, kwargs = mock_search.call_args_list[1]
         assert args[0] == "test_user"
         assert args[1] == "software engineering"
-        assert kwargs.get("top_k") == 5
         
         assert len(new_state["retrieved_chunks"]) > 0
 

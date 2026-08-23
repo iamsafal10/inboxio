@@ -1,10 +1,16 @@
-import asyncio
-from app.agent.graph import run_agent_graph
-from app.core.database import SessionLocal
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-user_id = "00000000-0000-0000-0000-000000000000"
-state = run_agent_graph(user_id, "recent job mail")
-print("Sub goals:", state.get("sub_goals"))
-print("Tool calls:", state.get("tool_calls"))
-print("Chunks:", len(state.get("retrieved_chunks", [])))
-print("Final Answer:", state.get("final_answer"))
+from app.core.database import SessionLocal
+from app.models.user import User
+from app.agent.graph import run_agent_graph
+
+db = SessionLocal()
+user = db.query(User).filter(User.email == 'one@gmail.com').first()
+if user:
+    print(f"Testing for user ID: {user.id}")
+    state = run_agent_graph(str(user.id), "What job or internship opportunities did I receive recently?")
+    print("FINAL ANSWER:", state.get("final_answer"))
+else:
+    print("User not found")
+db.close()

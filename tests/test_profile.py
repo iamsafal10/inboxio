@@ -32,7 +32,7 @@ def test_get_profile_ui():
     response = client.get("/profile/ui")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "Your Inboxio Profile" in response.text
+    assert "Inboxio Profile" in response.text
 
 def test_profile_empty_by_default(auth_header):
     headers, user_id = auth_header

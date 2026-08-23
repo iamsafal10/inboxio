@@ -183,3 +183,10 @@
   2. Determined that the frontend did not require a separate Vercel deployment, as the minimal UI is natively served via FastAPI Jinja templates.
   3. Acknowledged and accepted the ChromaDB ephemeral filesystem risk for this demo deployment (Chroma data resets on server sleep).
   4. Switched the primary deployed LLM provider to `groq` (`llama3-8b-8192`) due to restrictive quota limits on the original Gemini provider.
+
+## Phase 2: Agent Architecture (Bugfix)
+- Diagnosed Groq 413 TPM error (Tokens Per Minute) in the `synthesizer_node`. The `retriever_node` was returning up to 64 relevant chunks for broad queries like "job", resulting in an 18,000+ token context which exceeded the free tier limit of 8,000.
+- Implemented robust context-budget limiting using `tiktoken` in `synthesizer_node`.
+- Split retrieved chunks into Tier 1 (exact DB matches like sender/date, no distance metric) and Tier 2 (semantic search matches, ranked by distance).
+- Allocated a 4,000-token cap for Tier 1 to ensure space remains for semantic matches, and a hard 6,000-token global cap.
+- Converted outdated `chat-ui` Phase 0 stub tests to assert against the real agent endpoint, and fixed profile tests to match Next.js transition text.

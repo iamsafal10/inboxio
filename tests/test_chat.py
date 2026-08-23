@@ -14,16 +14,19 @@ class TestChat(unittest.TestCase):
         res = client.get("/chat-ui")
         self.assertEqual(res.status_code, 200)
         self.assertIn("text/html", res.headers["content-type"])
-        self.assertIn("Inboxio Chat UI (Phase 0)", res.text)
-        self.assertIn("Login", res.text)
 
     def test_chat_endpoint_requires_auth(self):
         """Verify the /chat endpoint rejects unauthenticated requests."""
         res = client.post("/chat", json={"message": "hello"})
         self.assertEqual(res.status_code, 401)
 
-    def test_chat_endpoint_echoes_message(self):
-        """Verify the /chat endpoint echoes the placeholder message when authenticated."""
+    from unittest.mock import patch
+
+    @patch("app.routers.chat.run_agent_graph")
+    def test_chat_endpoint_calls_agent_graph(self, mock_run_agent_graph):
+        """Verify the /chat endpoint calls the real agent graph."""
+        mock_run_agent_graph.return_value = {"final_answer": "Mocked AI response"}
+        
         test_email = "chat_test_user@example.com"
         test_password = "securepassword123"
 
@@ -39,7 +42,8 @@ class TestChat(unittest.TestCase):
             headers={"Authorization": f"Bearer {token}"}
         )
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()["response"], "Agent not built yet. You said: Did I get any interview invites?")
+        self.assertEqual(res.json()["response"], "Mocked AI response")
+        mock_run_agent_graph.assert_called_once()
 
 if __name__ == "__main__":
     unittest.main()

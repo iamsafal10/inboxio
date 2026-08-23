@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+import tiktoken
 from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
 
@@ -294,17 +295,68 @@ def synthesizer_node(state: AgentState) -> AgentState:
     conflicts = state.get("conflicts_detected", [])
     check_status = state.get("check_status", "passed")
     
-    # Format the evidence identically, assigning a Source ID to each chunk.
+    # Separate chunks into Tier 1 (Exact match, distance=None) and Tier 2 (Semantic, distance!=None)
+    tier_1 = [c for c in retrieved_chunks if c.get("distance") is None]
+    tier_2 = [c for c in retrieved_chunks if c.get("distance") is not None]
+    
+    # Sort Tier 2 by semantic relevance (distance ascending)
+    tier_2.sort(key=lambda x: x.get("distance", 999.0))
+    
+    # Token counting using tiktoken (cl100k_base is standard for newer models)
+    try:
+        enc = tiktoken.get_encoding("cl100k_base")
+    except Exception:
+        # Fallback if tiktoken fails
+        enc = None
+        
+    def count_tokens(text: str) -> int:
+        if enc:
+            return len(enc.encode(text))
+        return len(text) // 4
+        
+    MAX_EVIDENCE_TOKENS = 6000
+    TIER_1_MAX_BUDGET = 4000  # Cap Tier 1 so Tier 2 can fit
+    
     formatted_evidence = []
-    for i, chunk in enumerate(retrieved_chunks):
-        meta = chunk.get("metadata", {})
-        sender = meta.get("sender", "Unknown")
-        date = meta.get("sent_at", "Unknown")
-        subject = meta.get("subject", "No Subject")
-        text = chunk.get("text", "")
-        formatted_evidence.append(f"--- [Source ID: {i+1}] ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n")
+    current_tokens = 0
+    truncation_occurred = False
+    source_id = 1
+    
+    # Helper to append chunks safely
+    def _append_chunks(chunks, budget_cap=None):
+        nonlocal current_tokens, truncation_occurred, source_id
+        for chunk in chunks:
+            meta = chunk.get("metadata", {})
+            sender = meta.get("sender", "Unknown")
+            date = meta.get("sent_at", "Unknown")
+            subject = meta.get("subject", "No Subject")
+            text = chunk.get("text", "")
+            
+            chunk_str = f"--- [Source ID: {source_id}] ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n"
+            tokens = count_tokens(chunk_str)
+            
+            if current_tokens + tokens > MAX_EVIDENCE_TOKENS:
+                truncation_occurred = True
+                break
+                
+            if budget_cap and current_tokens + tokens > budget_cap:
+                # We reached the sub-budget for this tier, stop but don't flag global truncation
+                break
+                
+            formatted_evidence.append(chunk_str)
+            current_tokens += tokens
+            source_id += 1
+
+    # First add Tier 1 up to its cap
+    _append_chunks(tier_1, budget_cap=TIER_1_MAX_BUDGET)
+    
+    # Then add Tier 2 with remaining global budget
+    _append_chunks(tier_2)
     
     full_evidence = "\n".join(formatted_evidence)
+    if truncation_occurred:
+        full_evidence += "\n...[Remaining evidence truncated to fit context budget]..."
+        
     if not full_evidence:
         full_evidence = "No evidence found."
         

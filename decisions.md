@@ -241,3 +241,7 @@
   - *Context*: The original Gemini API exhausted its free quota, and the alternative OpenRouter stealth model (`ox-alpha`) hit severe upstream global rate limits.
   - *Choice*: Switched `LLM_PROVIDER=groq` to use `llama3-8b-8192` as the primary production model.
   - *Rationale*: Groq offers incredibly fast inference and generous rate limits, allowing the multi-step LangGraph orchestration to complete without timeout bottlenecks, ensuring a smooth deployed experience.
+
+## Agent Context Management
+- **Context Limiting via Token Budgets:** To prevent `413 Payload Too Large` rate-limit errors from LLM providers with strict TPM caps (like Groq's 8k TPM limit on the free tier), `synthesizer_node` enforces a hard limit of 6,000 tokens for evidence. It uses `tiktoken` (`cl100k_base`) to dynamically measure chunks before appending.
+- **Evidence Prioritization:** Rather than blindly truncating the end of the retrieval list or artificially crippling the `top_k` limit in Chroma (which hurts recall), the synthesizer splits evidence into two tiers. Tier 1 handles exact matches (e.g., date-range or sender queries chosen explicitly by the planner), and Tier 2 handles semantic Chroma matches. Tier 2 is sorted ascending by cosine distance. Tier 1 is capped at a sub-budget (4,000 tokens) to guarantee Tier 2 always has room to provide semantic color.
