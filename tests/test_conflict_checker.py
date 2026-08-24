@@ -116,9 +116,11 @@ class TestConflictCheckerNode(unittest.TestCase):
 
         state = self.base_state.copy()
         
-        # Max chars is 200,000. So we need text > 200,000 chars.
-        large_text = "A" * 210000 
-        state["retrieved_chunks"] = [{"text": large_text, "metadata": {}}]
+        # Max tokens per batch is 5000. Fallback tokenizer uses chars / 4. 
+        # Create 10 chunks of 4000 characters (~1000 tokens each).
+        # This gives ~10,000 tokens total, which should split into at least 2 batches.
+        chunks = [{"text": "A" * 4000, "metadata": {}} for _ in range(10)]
+        state["retrieved_chunks"] = chunks
 
         result = conflict_checker_node(state)
         

@@ -224,21 +224,41 @@ def conflict_checker_node(state: AgentState) -> AgentState:
     if not retrieved_chunks:
         return {**state, "conflicts_detected": [], "check_status": "passed"}
 
-    # Format chunks into a single text representation
-    formatted_evidence = []
+    try:
+        enc = tiktoken.get_encoding("cl100k_base")
+    except Exception:
+        enc = None
+        
+    def count_tokens(text: str) -> int:
+        if enc:
+            return len(enc.encode(text))
+        return len(text) // 4
+
+    MAX_TOKENS_PER_BATCH = 5000
+    batches = []
+    current_batch = []
+    current_tokens = 0
+
     for i, chunk in enumerate(retrieved_chunks):
         meta = chunk.get("metadata", {})
         sender = meta.get("sender", "Unknown")
         date = meta.get("sent_at", "Unknown")
         subject = meta.get("subject", "No Subject")
         text = chunk.get("text", "")
-        formatted_evidence.append(f"--- Evidence {i+1} ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n")
-    
-    full_text = "\n".join(formatted_evidence)
-    
-    # Batching logic: chunk text if extremely large (e.g., > 200000 chars)
-    max_chars_per_batch = 200000
-    batches = [full_text[i:i+max_chars_per_batch] for i in range(0, len(full_text), max_chars_per_batch)]
+        
+        chunk_str = f"--- Evidence {i+1} ---\nSender: {sender}\nDate: {date}\nSubject: {subject}\nContent: {text}\n"
+        tokens = count_tokens(chunk_str)
+        
+        if current_tokens + tokens > MAX_TOKENS_PER_BATCH and current_batch:
+            batches.append("\n".join(current_batch))
+            current_batch = [chunk_str]
+            current_tokens = tokens
+        else:
+            current_batch.append(chunk_str)
+            current_tokens += tokens
+            
+    if current_batch:
+        batches.append("\n".join(current_batch))
     
     llm = get_llm(temperature=0.0)
     structured_llm = llm.with_structured_output(ConflictOutput)
@@ -314,8 +334,8 @@ def synthesizer_node(state: AgentState) -> AgentState:
             return len(enc.encode(text))
         return len(text) // 4
         
-    MAX_EVIDENCE_TOKENS = 6000
-    TIER_1_MAX_BUDGET = 4000  # Cap Tier 1 so Tier 2 can fit
+    MAX_EVIDENCE_TOKENS = 5000
+    TIER_1_MAX_BUDGET = 2500  # Cap Tier 1 so Tier 2 can fit
     
     formatted_evidence = []
     current_tokens = 0

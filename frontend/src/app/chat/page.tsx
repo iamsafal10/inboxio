@@ -12,10 +12,23 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!token) {
       router.push("/login");
+    } else {
+      // Fetch user profile to check gmail_connected
+      fetch("/auth/me", {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.gmail_connected !== undefined) {
+          setGmailConnected(data.gmail_connected);
+        }
+      })
+      .catch(err => console.error("Failed to fetch user data:", err));
     }
   }, [token, router]);
 
@@ -30,7 +43,7 @@ export default function ChatPage() {
     setError("");
 
     try {
-      const res = await fetch("/chat", {
+      const res = await fetch("/api/chat_backend", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -57,7 +70,23 @@ export default function ChatPage() {
 
   return (
     <div className="container" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
-      <h2>Chat with Inboxio</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h2 style={{ margin: 0 }}>Chat with Inboxio</h2>
+        {gmailConnected !== null && (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {gmailConnected ? (
+              <span style={{ color: "#16a34a", fontWeight: 500, fontSize: "0.9rem" }}>Gmail: Connected ✓</span>
+            ) : (
+              <>
+                <span style={{ color: "#dc2626", fontWeight: 500, fontSize: "0.9rem" }}>Gmail: Not Connected</span>
+                <a href="http://localhost:8000/gmail/oauth/connect" className="btn" style={{ textDecoration: "none", padding: "6px 12px", fontSize: "0.85rem" }}>
+                  Connect
+                </a>
+              </>
+            )}
+          </div>
+        )}
+      </div>
       
       {error && <div className="alert alert-danger">{error}</div>}
       

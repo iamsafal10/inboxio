@@ -8,12 +8,12 @@ const nextConfig: NextConfig = {
         destination: "http://127.0.0.1:8000/auth/:path*",
       },
       {
-        source: "/api/:path*",
-        destination: "http://127.0.0.1:8000/api/:path*",
+        source: "/api/chat_backend",
+        destination: "http://127.0.0.1:8000/chat",
       },
       {
-        source: "/chat",
-        destination: "http://127.0.0.1:8000/chat",
+        source: "/api/:path*",
+        destination: "http://127.0.0.1:8000/api/:path*",
       },
       {
         source: "/cold_email/:path*",
