@@ -1,6 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+const TOKEN_KEY = "inboxio_token";
 
 interface AuthContextType {
   token: string | null;
@@ -16,15 +18,33 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setTokenState] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      setTokenState(localStorage.getItem(TOKEN_KEY));
+    } catch {
+      /* ignore */
+    }
+    setReady(true);
+  }, []);
 
   const setToken = (newToken: string | null) => {
     setTokenState(newToken);
+    try {
+      if (newToken) localStorage.setItem(TOKEN_KEY, newToken);
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* ignore */
+    }
   };
 
   const logout = () => {
-    setTokenState(null);
+    setToken(null);
     window.location.href = "/";
   };
+
+  if (!ready) return null;
 
   return (
     <AuthContext.Provider value={{ token, setToken, logout }}>

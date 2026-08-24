@@ -20,3 +20,6 @@ langchain-groq
 chromadb
 sentence-transformers
 langchain-openai
+langchain-ollama
+tiktoken
+jinja2

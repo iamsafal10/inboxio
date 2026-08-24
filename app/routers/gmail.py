@@ -115,7 +115,7 @@ def oauth_callback(
     db.commit()
     db.refresh(user)
 
-    return RedirectResponse(url="/gmail/connected")
+    return RedirectResponse(url="http://localhost:3000/chat")
 
 
 @router.get("/connected")

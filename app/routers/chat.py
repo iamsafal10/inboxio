@@ -1,6 +1,6 @@
 """Router for the minimal web chat UI and placeholder chat endpoint."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -325,9 +325,15 @@ def chat_endpoint(payload: ChatRequest, current_user: User = Depends(get_current
     """Chat endpoint using the LangGraph agent."""
     if not is_career_question(payload.message):
         return {"response": "I can only answer questions related to your career, job applications, or interviews."}
-        
-    state = run_agent_graph(str(current_user.id), payload.message)
-    
+
+    try:
+        state = run_agent_graph(str(current_user.id), payload.message)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Agent failed: {exc}",
+        )
+
     answer = state.get("final_answer") or "Sorry, I couldn't generate a response."
-    
+
     return {"response": answer}

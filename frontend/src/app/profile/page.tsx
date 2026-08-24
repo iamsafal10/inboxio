@@ -64,8 +64,8 @@ export default function ProfilePage() {
       if (!res.ok) {
         throw new Error(data.detail || "Failed to save profile");
       }
-      
-      router.push("/cold-email");
+
+      setMessage({ text: "Profile saved and embedded.", type: "success" });
     } catch (err: any) {
       setMessage({ text: err.message, type: "danger" });
     } finally {

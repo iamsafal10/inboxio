@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     OPENROUTER_API_KEY: str = ""
     LLM_PROVIDER: str = "gemini"
+    OLLAMA_BASE_URL: str = "http://127.0.0.1:11434"
+    OLLAMA_MODEL: str = "llama3.2"
     MAX_EMAILS: int = 25
     MAX_CHUNK_CHARS: int = 2000
 

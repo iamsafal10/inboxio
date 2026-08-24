@@ -1,132 +1,0 @@
-Collection: inboxio_user_658c2ad5_fa68_4795_b847_3f4cd2256cd8
-Collection missing: Collection [inboxio_user_658c2ad5_fa68_4795_b847_3f4cd2256cd8] does not exist
-Found other collections: ['inboxio_profile_bdff8b3a1074476e8989e5b6d7fbfd40', 'inboxio_profile_ae54dd898dbe40b28c0d5cdecbac3c24', 'inboxio_profile_554048422b3d4588b7616aac8b3b343c', 'inboxio_profile_8302719eed6e464f84f0f665264f4cef', 'inboxio_profile_c326ab4de4ad4056882f137091da6202', 'inboxio_profile_751f09e735a5484080ce361c9b380823', 'inboxio_profile_de64bfab511d46d29dfb73b513ea883a', 'inboxio_profile_527f762312dd4be78a2a367770fa2ff1', 'inboxio_profile_12cc634bc46948fb98ce606bdfc40b84', 'inboxio_profile_85dcb2b252fb440a8008fa4921c9e8fb', 'inboxio_profile_347d8e9b5b2d4a5890c346b9748d6ada', 'inboxio_profile_4db11be5b5a64e4f885e188c0597af9b', 'inboxio_profile_e6ab2b032d1f4046b0a377114322aa38', 'inboxio_profile_b4982fc9cce94584857654b8ab711a66', 'inboxio_profile_a816707f19494736b02653a96b47134f', 'inboxio_profile_07c7e749834740208d0e58a83e761b6a', 'emails', 'inboxio_profile_a17d93b5a4cb424c8afe42e2003b6239', 'inboxio_profile_90c563ab28df4e5ab694586e597a18af', 'inboxio_profile_c205a6f268554fad8c0d2b56ef441825', 'inboxio_profile_c3827a7c860647fcba17e91857fbf180', 'inboxio_profile_d50b882192bd48e3bea2fe012e98d281', 'inboxio_profile_0eafabdddc9e4574a4d7a174d3ccbd98', 'inboxio_profile_ee8291e57b8e403bbe82e9da63e8366f', 'inboxio_profile_4a25c82600754928bed0f0dfa253f0bb', 'inboxio_profile_82439c4a0ebf40c494fb340098b2150a', 'inboxio_profile_1d2931cecd0f4e6bbd0037f15e750acc', 'inboxio_profile_c72d7202c7604e64a60d4773db366576', 'inboxio_profile_fb9e21988e314e12827680777e1da881', 'inboxio_user_e6ab2b03_2d1f_4046_b0a3_77114322aa38']
-Using inboxio_user_e6ab2b03_2d1f_4046_b0a3_77114322aa38 as fallback to read data
-Total chunks: 1139
-
---- RECENT EMAILS ---
-Date: 2026-08-21T16:40:53+00:00
-From: Safal Tripathi <safaltripathi1012@gmail.com>
-Subject: Re: Hi
-Snippet: Check 2  On Fri, 21 Aug, 2026, 9:59 pm Safal Tripathi, <safaltripathi1012@gmail.com> wrote:  > Hii boss >
---------------------------------------------------
-Date: 2026-08-21T16:29:33+00:00
-From: Safal Tripathi <safaltripathi1012@gmail.com>
-Subject: Hi
-Snippet: Hii boss
---------------------------------------------------
-Date: 2026-08-21T16:10:56+00:00
-From: Codebasics <info@codebasics.io>
-Subject: Codebasics AI Day, 5th Sept - Come meet us in person!
-Snippet: You're invited: Codebasics AI Day, 5th September     Meet your community in person. Codebasics AI Day, 5th September, T-Hub Hyderabad.                            Dear Safal Tripathi, come meet us in person.        We are inviting you to Codebasics AI Day. It 
---------------------------------------------------
-Date: 2026-08-21T13:12:37+00:00
-From: Internshala <onlinedegree@mail.internshala.com>
-Subject: Update: 1 unread update on Online MBA program
-Snippet: Chandigarh University MBA Hi Safal, Why should your career have to pause while you pursue your next degree? With an Online MBA from Chandigarh University , you can keep building your career while continuing your education. Learn at your pace, balance your existing commitments, and work towards the n
---------------------------------------------------
-Date: 2026-08-21T11:15:17+00:00
-From: AtCoder System Mail <noreply@atcoder.jp>
-Subject: AtCoder Beginner Contest 472 Announcement
-Snippet: We will hold AtCoder Beginner Contest 472.   - Contest URL: https://atcoder.jp/contests/abc472 - Start Time: http://www.timeanddate.com/worldclock/fixedtime.html?iso=20260822T2100&p1=248 - Duration: 100 minutes - Writer: harurun4635, KumaTachiRen, sheyasutaka - Tester: mechanicalpenciI, cn449
---------------------------------------------------
-Date: 2026-08-21T07:43:43+00:00
-From: LeetCode <no-reply@leetcode.com>
-Subject: LeetCode Weekly Digest
-Snippet: @import url("https://use.typekit.net/vyq6kag.css"); /* Take care of image borders and formatting */ img { max-width: 600px; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; } a { text-decoration: none; border: 0; outline: none; color: #212121; } p { margin: 0; } u+.body a { col
---------------------------------------------------
-Date: 2026-08-21T07:07:14+00:00
-From: JobBoard <hrishikesh@codechef.com>
-Subject: NxtWave is Hiring: Software Developer & Instructor (SDI-DSA)
-Snippet: <!doctype html><html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en"><head><title></title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!--[if mso]> <xml><w:W
---------------------------------------------------
-Date: 2026-08-21T02:30:46+00:00
-From: LinkedIn <invitations@linkedin.com>
-Subject: See RITESH’s and other people’s connections, experience, and more
-Snippet: You have 16 new connections. Check out their profiles and start a conversation  RITESH RANJAN MTS @Salesforce | AI | Data Engineering | Big Data | MTech - AI&DSE @IIT Patna | BTech - CSE @MNIT Jaipur | Full Stack Web & App Developer View profile: https://www.linkedin.com/comm/in/sagittariusk2?li
---------------------------------------------------
-Date: 2026-08-20T19:48:29+00:00
-From: The Browser Company <members@arc.net>
-Subject: Arc Search on iOS: the fastest way to search on mobile
-Snippet: https://thebrowser.company/ August 20, 2026 A new dream for mobile browsers https://apps.apple.com/us/app/arc-search/id6472513080  Many moons ago, we started Arc with one question — could a browser help us stay focused, organized, and in control on this beautiful thing we call the internet?  
---------------------------------------------------
-Date: 2026-08-20T19:16:27+00:00
-From: Internshala Trainings <jos@mail.internshala.com>
-Subject: Update: You’ve got 1 update that can level up your profile
-Snippet: Internshala Trainings #outlook a { padding:0; } body { width:100%!important; margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; } table, td { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; } img { border:0; outline:none; text-decoration:none; -ms-in
---------------------------------------------------
-Date: 2026-08-20T14:09:05+00:00
-From: INDIAN BANK <noreply@indcrm.indianbank.bank.in>
-Subject: VBX_Callback_feature
-Snippet: template       ​​​​​​​Dear Safal Tripathi      IndSmart-Android  IndSmart-iOS --Click Here to unsubscribe from this newsletter.
---------------------------------------------------
-Date: 2026-08-20T13:53:36+00:00
-From: Internshala <student@internshala.com>
-Subject: Your profile is a perfect match for these 'Web Development' internships
-Snippet: Safal, earn high stipend in your preferred field and location. Apply for free on Internshala &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nb sp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&n
---------------------------------------------------
-Date: 2026-08-20T13:42:37+00:00
-From: Internshala Trainings <jos@mail.internshala.com>
-Subject: Update: You’ve got 1 update that can level up your profile
-Snippet: Internshala Trainings #outlook a { padding:0; } body { width:100%!important; margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; } table, td { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; } img { border:0; outline:none; text-decoration:none; -ms-in
---------------------------------------------------
-Date: 2026-08-20T09:34:13+00:00
-From: Instagram <noreply@mail.instagram.com>
-Subject: shambhavi61066 started following you
-Snippet: Facebook @media all and (max-width: 480px){*[class].ib_t{min-width:100%!important}*[class].ib_row{display:block!important}*[class].ib_ext{display:block!important;padding:10px 0 5px;vertical-align:top!important;width:100%!important}*[class].ib_img,*[class].ib_mid{vertical-align:top!important}*[class]
---------------------------------------------------
-Date: 2026-08-20T09:12:07+00:00
-From: Google <noreply-accounts@google.com>
-Subject: You shared some Google Account data with mycvcreator.com
-Snippet: Keep track of your Google Account data    i.am.safaltripathi@gmail.com     <!--[if !mso]><!-->  <!--[if false]><!-->   You're receiving this email because you used Sign in with Google to sign in   to   <https://c.gle/ACT4xYwziN4xo_w3UPix5uVL8N1B2HI7EF4XWLi-GIjS_ykZasI7X2bil1JWs3rtRW
---------------------------------------------------
-Date: 2026-08-20T07:01:21+00:00
-From: UNiDAYS <hello@info.myunidays.com>
-Subject: Class is in session at Daily Objects🎒...
-Snippet: [https://www.myunidays.com?xnpe_tifc=4IzlOkYJbun8bIPuOkH7OypUUosYO.ENOInj4.hutfb7hIHA4FhLbZJLxFBNtI1Zb.U_4I_8hfP_OypL4ubphuh_Oke.xFnXOf4u&utm_source=bloomreach&utm_medium=email&utm_campaign=in_part_email_dailyobjects_2026-08-20_stud_standard_filler_model&xnpe_cmp=.eJwTUhDZyLeCWTmeJXgPT5vH6RO5H71-Jgj
---------------------------------------------------
-Date: 2026-08-20T06:39:31+00:00
-From: Neha Thakur via LinkedIn <messaging-digest-noreply@linkedin.com>
-Subject: Neha just messaged you
-Snippet: You have 1 new message  .....................................  Neha Thakur (AMTS @Salesforce|| Ex- Wayfair|| Ex- Sde Intern @Agoda||CSE…) (https://in.linkedin.com/in/neha-thakur-900bb924b)  View message: https://www.linkedin.com/comm/messaging/thread/2-MWRlYWJiODYtOGU0My00NDhlLThiOTAtODcyYzA2
---------------------------------------------------
-Date: 2026-08-20T05:45:38+00:00
-From: LinkedIn <messages-noreply@linkedin.com>
-Subject: See hiring trends for Meritshot
-Snippet: ----------------------------------------  This email was intended for Safal Tripathi (Amazon MLSS’26 | Knight @LeetCode | Pupil @Codeforces | IIITDMJ CSE’27) Learn why we included this: https://www.linkedin.com/help/linkedin/answer/4788?lang=en&lipi=urn%3Ali%3Apage%3Aemail_email_premium_nba_recom
---------------------------------------------------
-Date: 2026-08-20T05:42:04+00:00
-From: Academia Mentions <premium@academia-mail.com>
-Subject: “S. Tripathi”: 1 mention in a Computer Science paper
-Snippet: Dear Safal,  The name “S. Tripathi” was mentioned in a Computer Science paper uploaded to Academia.  Follow the link below to see all of your mentions:  https://www.academia.edu/keypass/TTFqS3FHLzRIcjZyTXRBMnZjRXQvM3FxZzkyYXliMDJFSmFMdldUL2Mvcz0tLXY1UnFsSzNsSFFVWHRpQXBmWG9qYWc9PQ==--da82754989
---------------------------------------------------
-Date: 2026-08-20T05:24:07+00:00
-From: Naukri MINIs <info@minis.naukri.com>
-Subject: 2 messages to send a recruiter who just viewed your profile
-Snippet: Naukri Minis Hey Safal, When a recruiter views your profile, it usually means you already passed the hardest part: getting noticed. So why do conversations still die after that? Usually because candidates either say too much… or disappear completely. This video shows the simple 2-message follow-up t
---------------------------------------------------
-Date: 2026-08-20T02:30:44+00:00
-From: LinkedIn <invitations@linkedin.com>
-Subject: See Saurabh’s and other people’s connections, experience, and more
-Snippet: Email=eml-email_accept_invite_digest_02-null-0-null-null-ghy36f~mt0wldgm~6f-null-null&eid=ghy36f-mt0wldgm-6f   Vivek Yadav Engineer @Salesforce | Ex Microsoft View profile: https://www.linkedin.com/comm/in/vivek-yadav-b2114576?lipi=urn%3Ali%3Apage%3Aemail_email_accept_invite_digest_02%3BYwtRQoT
---------------------------------------------------
-Date: 2026-08-20T01:44:08+00:00
-From: LinkedIn <messages-noreply@linkedin.com>
-Subject: Reminder: Information Technology Rules
-Snippet: Hello Safal,  LinkedIn is required to send the following as a reminder to all members in India in accordance with India’s Information Technology (Intermediary Guidelines) Amendment Rules, 2026. This email is merely a reminder of our policies; it does not indicate that your account is not in good s
---------------------------------------------------
-Date: 2026-08-19T20:56:45+00:00
-From: Google <no-reply@accounts.google.com>
-Subject: Security alert for safaltripathi1012@gmail.com
-Snippet: This is a copy of a security alert sent to safaltripathi1012@gmail.com. i.am.safaltripathi@gmail.com is the recovery email for this account. If you don't recognize this account, remove <https://accounts.google.com/AccountDisavow?adt=AOX8kipFCVVZ0pra-AoFIMVAr7srKcm_t4myJKiHbVKtCmHJjIO5sFqFoaV2SG31
---------------------------------------------------
-Date: 2026-08-19T19:47:24+00:00
-From: The Browser Company <members@arc.net>
-Subject: Welcome to Arc!
-Snippet: https://thebrowser.company/ August 19, 2026 Meet your new browser! https://thebrowser.company/  Welcome to Arc — your new home on the internet.  Why did we build this? Because we believe that life is more than an endless row of tabs.  In a world where all our work is online, you deserve one
---------------------------------------------------
-Date: 2026-08-19T13:53:45+00:00
-From: Internshala <student@internshala.com>
-Subject: MCube AI is hiring Backend Development intern and your profile matches
-Snippet: Safal, earn high stipend in your preferred field and location. Apply for free on Internshala &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nb sp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&n
---------------------------------------------------

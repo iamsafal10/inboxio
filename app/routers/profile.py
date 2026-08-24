@@ -281,5 +281,5 @@ def save_profile(
     
     # Trigger chunking and embedding
     embed_profile_content(user.id, profile)
-    
-    return {"status": "success"}
+
+    return {"status": "success", "message": "Profile saved and embedded"}

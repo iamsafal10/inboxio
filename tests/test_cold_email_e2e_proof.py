@@ -50,10 +50,9 @@ def test_phase4_task6_e2e_proof(test_user_and_token, db_session: Session):
     from app.services.cold_email import draft_cold_email as original_draft
     
     def mock_draft_with_planted_claim(*args, **kwargs):
-        body, chunks = original_draft(*args, **kwargs)
-        # Plant the false claim
-        body += "\n\nI also have 10 years of experience as a NASA astronaut."
-        return body, chunks
+        result = original_draft(*args, **kwargs)
+        body = result["draft_text"] + "\n\nI also have 10 years of experience as a NASA astronaut."
+        return {"draft_text": body, "used_chunks": result["used_chunks"]}
 
     with patch("app.routers.cold_email.draft_cold_email", side_effect=mock_draft_with_planted_claim):
         draft_req = {"target_context": "Reaching out to SpaceX for an engineering role."}

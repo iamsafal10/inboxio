@@ -1,9 +1,9 @@
 """LLM Provider setup and instantiation module."""
 
-import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from app.core.config import settings
@@ -16,13 +16,13 @@ class OpenRouterChatModel(ChatOpenAI):
 def get_llm(temperature: float = 0.0) -> BaseChatModel:
     """
     Returns an instantiated LangChain Chat Model based on LLM_PROVIDER.
-    Supports: 'gemini', 'groq', 'openrouter_ox_alpha'
+    Supports: 'gemini', 'groq', 'openrouter_ox_alpha', 'ollama'
     """
     provider = settings.LLM_PROVIDER.lower()
 
     if provider == "groq":
         return ChatGroq(
-            model="openai/gpt-oss-120b",  # Default groq model, can be made configurable
+            model="openai/gpt-oss-120b",
             temperature=temperature,
             api_key=settings.GROQ_API_KEY or "dummy_key"
         )
@@ -33,8 +33,14 @@ def get_llm(temperature: float = 0.0) -> BaseChatModel:
             api_key=settings.OPENROUTER_API_KEY or "dummy_key",
             base_url="https://openrouter.ai/api/v1"
         )
+    elif provider == "ollama":
+        return ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=temperature,
+            num_ctx=8192,
+        )
     else:
-        # Default to gemini
         return ChatGoogleGenerativeAI(
             model="gemini-3.5-flash",
             temperature=temperature,

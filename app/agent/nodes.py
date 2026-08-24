@@ -220,8 +220,13 @@ def conflict_checker_node(state: AgentState) -> AgentState:
     """
     logger.info("Running conflict_checker_node")
     retrieved_chunks = state.get("retrieved_chunks", [])
-    
+
     if not retrieved_chunks:
+        return {**state, "conflicts_detected": [], "check_status": "passed"}
+
+    # Local small models (llama3.2 via Ollama) thrash on large structured conflict passes.
+    if settings.LLM_PROVIDER.lower() == "ollama":
+        logger.info("Skipping conflict checker for ollama provider")
         return {**state, "conflicts_detected": [], "check_status": "passed"}
 
     try:
@@ -234,7 +239,7 @@ def conflict_checker_node(state: AgentState) -> AgentState:
             return len(enc.encode(text))
         return len(text) // 4
 
-    MAX_TOKENS_PER_BATCH = 5000
+    MAX_TOKENS_PER_BATCH = 1800
     batches = []
     current_batch = []
     current_tokens = 0
@@ -334,8 +339,8 @@ def synthesizer_node(state: AgentState) -> AgentState:
             return len(enc.encode(text))
         return len(text) // 4
         
-    MAX_EVIDENCE_TOKENS = 5000
-    TIER_1_MAX_BUDGET = 2500  # Cap Tier 1 so Tier 2 can fit
+    MAX_EVIDENCE_TOKENS = 1800
+    TIER_1_MAX_BUDGET = 900  # Cap Tier 1 so Tier 2 can fit
     
     formatted_evidence = []
     current_tokens = 0
