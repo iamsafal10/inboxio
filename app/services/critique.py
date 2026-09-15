@@ -45,16 +45,15 @@ def self_critique(draft: str, profile_chunks_used: List[str]) -> List[Dict[str, 
         response = llm.invoke(prompt_value)
         content = str(response.content).strip()
         
-        # Remove markdown code blocks if the LLM hallucinated them despite instructions
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
+        # Robustly extract JSON list using regex in case the LLM wrapped it in markdown or added text
+        import re
+        match = re.search(r'\[.*\]', content, re.DOTALL)
+        if match:
+            content = match.group(0)
+        else:
+            # Fallback if no array brackets found, just let json.loads try it
+            pass
             
-        content = content.strip()
-        
         # Parse JSON
         flags = json.loads(content)
         

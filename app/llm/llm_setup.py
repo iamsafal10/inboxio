@@ -42,7 +42,7 @@ def get_llm(temperature: float = 0.0) -> BaseChatModel:
         )
     else:
         return ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             temperature=temperature,
             google_api_key=settings.GEMINI_API_KEY or "dummy_key"
         )
