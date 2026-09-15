@@ -170,7 +170,7 @@ export default function ChatPage() {
         )}
         {loading && (
           <div style={{ textAlign: "left", color: "var(--text-muted)" }}>
-            Agent is thinking… local Ollama may take 2–3 minutes.
+            Agent is thinking… This might take 2–3 minutes.
           </div>
         )}
       </div>
