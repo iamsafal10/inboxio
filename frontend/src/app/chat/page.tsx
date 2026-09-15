@@ -3,34 +3,62 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { errorMessage } from "@/lib/errors";
 
 export default function ChatPage() {
-  const { token } = useAuth();
+  const { token, authFetch } = useAuth();
   const router = useRouter();
-  
-  const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
+
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [pipelineMsg, setPipelineMsg] = useState("");
+  const [pipelineBusy, setPipelineBusy] = useState(false);
 
   useEffect(() => {
     if (!token) {
       router.push("/login");
-    } else {
-      // Fetch user profile to check gmail_connected
-      fetch("/auth/me", {
-        headers: { "Authorization": `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
+      return;
+    }
+    authFetch("/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
         if (data && data.gmail_connected !== undefined) {
           setGmailConnected(data.gmail_connected);
         }
       })
-      .catch(err => console.error("Failed to fetch user data:", err));
+      .catch((err) => console.error("Failed to fetch user data:", err));
+  }, [token, router, authFetch]);
+
+  const connectGmail = async () => {
+    setError("");
+    try {
+      const res = await authFetch("/gmail/oauth/connect");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to start Gmail connect");
+      window.location.href = data.authorization_url;
+    } catch (err: unknown) {
+      setError(errorMessage(err));
     }
-  }, [token, router]);
+  };
+
+  const runPipelineStep = async (path: string, label: string) => {
+    setPipelineBusy(true);
+    setPipelineMsg("");
+    setError("");
+    try {
+      const res = await authFetch(path, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || `${label} failed`);
+      setPipelineMsg(`${label}: ${JSON.stringify(data)}`);
+    } catch (err: unknown) {
+      setError(errorMessage(err));
+    } finally {
+      setPipelineBusy(false);
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,29 +66,36 @@ export default function ChatPage() {
 
     const userMessage = input;
     setInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/chat_backend", {
+      const res = await authFetch("/api/chat_backend", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
         body: JSON.stringify({ message: userMessage }),
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.detail || "Chat failed");
+
+      const raw = await res.text();
+      let data: { response?: string; detail?: string | { msg?: string }[] };
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(raw.slice(0, 200) || `Chat failed (${res.status})`);
       }
-      
-      setMessages(prev => [...prev, { role: "agent", content: data.response }]);
-    } catch (err: any) {
-      setError(err.message);
+
+      if (!res.ok) {
+        throw new Error(
+          typeof data.detail === "string" ? data.detail : data.detail?.[0]?.msg || "Chat failed"
+        );
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "agent", content: data.response ?? "No response from agent." },
+      ]);
+    } catch (err: unknown) {
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -79,51 +114,75 @@ export default function ChatPage() {
             ) : (
               <>
                 <span style={{ color: "#dc2626", fontWeight: 500, fontSize: "0.9rem" }}>Gmail: Not Connected</span>
-                <a href="http://localhost:8000/gmail/oauth/connect" className="btn" style={{ textDecoration: "none", padding: "6px 12px", fontSize: "0.85rem" }}>
+                <button type="button" className="btn" style={{ padding: "6px 12px", fontSize: "0.85rem" }} onClick={connectGmail}>
                   Connect
-                </a>
+                </button>
               </>
             )}
           </div>
         )}
       </div>
-      
+
+      {gmailConnected && (
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "0.75rem", alignItems: "center" }}>
+          <button type="button" className="btn" style={{ padding: "6px 12px", fontSize: "0.8rem" }} disabled={pipelineBusy} onClick={() => runPipelineStep("/gmail/sync", "Sync")}>
+            Sync
+          </button>
+          <button type="button" className="btn" style={{ padding: "6px 12px", fontSize: "0.8rem" }} disabled={pipelineBusy} onClick={() => runPipelineStep("/gmail/chunk", "Chunk")}>
+            Chunk
+          </button>
+          <button type="button" className="btn" style={{ padding: "6px 12px", fontSize: "0.8rem" }} disabled={pipelineBusy} onClick={() => runPipelineStep("/gmail/embed", "Embed")}>
+            Embed
+          </button>
+          {pipelineMsg && <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{pipelineMsg}</span>}
+        </div>
+      )}
+
       {error && <div className="alert alert-danger">{error}</div>}
-      
+
       <div style={{ flex: 1, overflowY: "auto", marginBottom: "20px", border: "1px solid var(--border)", borderRadius: "8px", padding: "16px" }}>
         {messages.length === 0 ? (
           <p style={{ color: "var(--text-muted)", textAlign: "center", marginTop: "2rem" }}>
-            Start a conversation with your agent...
+            Ask career-related questions (job, interview, offer…). Sync → Chunk → Embed after connecting Gmail.
           </p>
         ) : (
           messages.map((msg, i) => (
-            <div key={i} style={{ 
-              marginBottom: "12px", 
-              textAlign: msg.role === "user" ? "right" : "left" 
-            }}>
-              <div style={{ 
-                display: "inline-block", 
-                padding: "8px 16px", 
-                borderRadius: "16px",
-                backgroundColor: msg.role === "user" ? "var(--primary)" : "#e5e7eb",
-                color: msg.role === "user" ? "white" : "black"
-              }}>
+            <div
+              key={i}
+              style={{
+                marginBottom: "12px",
+                textAlign: msg.role === "user" ? "right" : "left",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "8px 16px",
+                  borderRadius: "16px",
+                  backgroundColor: msg.role === "user" ? "var(--primary)" : "#e5e7eb",
+                  color: msg.role === "user" ? "white" : "black",
+                }}
+              >
                 {msg.content}
               </div>
             </div>
           ))
         )}
-        {loading && <div style={{ textAlign: "left", color: "var(--text-muted)" }}>Agent is thinking...</div>}
+        {loading && (
+          <div style={{ textAlign: "left", color: "var(--text-muted)" }}>
+            Agent is thinking… local Ollama may take 2–3 minutes.
+          </div>
+        )}
       </div>
-      
+
       <form onSubmit={handleSend} style={{ display: "flex", gap: "10px" }}>
-        <input 
-          type="text" 
-          className="input-field" 
+        <input
+          type="text"
+          className="input-field"
           style={{ marginBottom: 0, flex: 1 }}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
+          placeholder="e.g. What interviews do I have coming up?"
           disabled={loading}
         />
         <button type="submit" className="btn" disabled={loading || !input.trim()}>

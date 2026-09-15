@@ -41,6 +41,10 @@ env/
 # Vector DB & Storage
 chroma_data/
 
+# Scratch dumps / local logs
+scratch/outputs/
+*.log
+
 # Unit test / coverage
 htmlcov/
 .tox/
@@ -54,6 +58,10 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/.next/
 
 # OS artifacts
 .DS_Store

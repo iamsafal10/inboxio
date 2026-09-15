@@ -90,3 +90,19 @@ def search_by_date_range(user_id: str, start_date: str, end_date: str, query: Op
             ).order_by(Chunk.sent_at.desc(), Chunk.chunk_index.asc()).limit(top_k).all()
             
             return [_format_chunk(c) for c in chunks]
+
+
+def list_recent_emails(user_id: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    """
+    Retrieves the most recently received chunks for a user, newest first.
+
+    Used for 'what are my recent emails' style questions, where vector
+    similarity is the wrong ranking. The corpus is already career-filtered at
+    ingestion, so this can only ever return job/internship mail.
+    """
+    with SessionLocal() as db:
+        chunks = db.query(Chunk).join(EmailIndexed).filter(
+            EmailIndexed.user_id == user_id
+        ).order_by(Chunk.sent_at.desc(), Chunk.chunk_index.asc()).limit(top_k).all()
+
+        return [_format_chunk(c) for c in chunks]

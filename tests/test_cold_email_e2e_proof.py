@@ -21,7 +21,9 @@ def db_session():
 @pytest.fixture
 def test_user_and_token(db_session: Session):
     unique_email = f"e2e_proof_{uuid.uuid4()}@example.com"
-    user = User(email=unique_email, hashed_password="hashed")
+    # Past the Gmail send-scope precondition: this test is about the critique
+    # and approval gate, not OAuth.
+    user = User(email=unique_email, hashed_password="hashed", gmail_send_scope_granted=True)
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
@@ -44,19 +46,23 @@ def test_phase4_task6_e2e_proof(test_user_and_token, db_session: Session):
         "career_info": "Looking for backend engineering roles.",
         "writing_style_samples": "Hi, I'm reaching out because I saw the opening."
     }
-    client.post("/profile/api/profile", headers=headers, json=profile_payload)
+    client.post("/api/profile", headers=headers, json=profile_payload)
 
     # We want to run REAL draft creation, plant a fake claim, and run REAL critique.
     from app.services.cold_email import draft_cold_email as original_draft
     
     def mock_draft_with_planted_claim(*args, **kwargs):
-        body, chunks = original_draft(*args, **kwargs)
-        # Plant the false claim
-        body += "\n\nI also have 10 years of experience as a NASA astronaut."
-        return body, chunks
+        result = original_draft(*args, **kwargs)
+        body = result["draft_text"] + "\n\nI also have 10 years of experience as a NASA astronaut."
+        return {"subject": result["subject"], "draft_text": body, "used_chunks": result["used_chunks"]}
 
     with patch("app.routers.cold_email.draft_cold_email", side_effect=mock_draft_with_planted_claim):
-        draft_req = {"target_context": "Reaching out to SpaceX for an engineering role."}
+        draft_req = {
+            "recipient_email": "hr@spacex-example.com",
+            "role_specialization": "Propulsion Engineering Intern",
+            "company": "SpaceX",
+            "target_context": "Reaching out to SpaceX for an engineering role.",
+        }
         draft_res = client.post("/cold_email/api/draft", headers=headers, json=draft_req)
         
         # Verify the endpoint returned 200 and critique actually caught it
@@ -65,6 +71,10 @@ def test_phase4_task6_e2e_proof(test_user_and_token, db_session: Session):
         
         # Ensure the false claim was planted
         assert "NASA astronaut" in data["body"]
+
+        # The HR recipient the user asked for is echoed back for review
+        assert data["recipient_email"] == "hr@spacex-example.com"
+        assert data["subject"]
         
         # Ensure self-critique caught it (flags array shouldn't be empty)
         assert data["flags"] is not None
@@ -101,3 +111,6 @@ def test_phase4_task6_e2e_proof(test_user_and_token, db_session: Session):
         # Must succeed
         assert success_res.status_code == 200
         mock_send.assert_called_once()
+
+        # And it must go to the HR address the user entered, not the user
+        assert mock_send.call_args.kwargs["recipient"] == "hr@spacex-example.com"

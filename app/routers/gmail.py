@@ -78,7 +78,14 @@ def oauth_callback(
             detail="Missing required code or state parameter in OAuth callback",
         )
 
-    user_id, code_verifier, intent = decode_oauth_state(state)
+    try:
+        user_id, code_verifier, intent = decode_oauth_state(state)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -115,7 +122,7 @@ def oauth_callback(
     db.commit()
     db.refresh(user)
 
-    return RedirectResponse(url="/gmail/connected")
+    return RedirectResponse(url=f"{settings.FRONTEND_URL.rstrip('/')}/chat")
 
 
 @router.get("/connected")

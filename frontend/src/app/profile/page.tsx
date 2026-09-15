@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { errorMessage } from "@/lib/errors";
 
 export default function ProfilePage() {
-  const { token } = useAuth();
+  const { token, authFetch } = useAuth();
   const router = useRouter();
   
   const [resumeText, setResumeText] = useState("");
@@ -23,9 +24,7 @@ export default function ProfilePage() {
     // Load profile
     const fetchProfile = async () => {
       try {
-        const res = await fetch("/api/profile", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await authFetch("/api/profile");
         if (res.ok) {
           const data = await res.json();
           setResumeText(data.resume_text || "");
@@ -38,7 +37,7 @@ export default function ProfilePage() {
     };
     
     fetchProfile();
-  }, [token, router]);
+  }, [token, router, authFetch]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,12 +45,8 @@ export default function ProfilePage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/profile", {
+      const res = await authFetch("/api/profile", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
         body: JSON.stringify({
           resume_text: resumeText,
           career_info: careerInfo,
@@ -64,10 +59,10 @@ export default function ProfilePage() {
       if (!res.ok) {
         throw new Error(data.detail || "Failed to save profile");
       }
-      
-      router.push("/cold-email");
-    } catch (err: any) {
-      setMessage({ text: err.message, type: "danger" });
+
+      setMessage({ text: "Profile saved and embedded.", type: "success" });
+    } catch (err: unknown) {
+      setMessage({ text: errorMessage(err), type: "danger" });
     } finally {
       setLoading(false);
     }

@@ -23,6 +23,19 @@ class ColdEmailDraft(Base):
         Text,
         nullable=False,
     )
+    recipient_email = Column(
+        String(320),
+        nullable=True,
+        index=True,
+    )
+    subject = Column(
+        Text,
+        nullable=True,
+    )
+    role_specialization = Column(
+        String(255),
+        nullable=True,
+    )
     original_body = Column(
         Text,
         nullable=False,

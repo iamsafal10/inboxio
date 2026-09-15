@@ -1,6 +1,6 @@
 """Router for the minimal web chat UI and placeholder chat endpoint."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -317,17 +317,38 @@ def get_chat_ui():
     return HTMLResponse(content=CHAT_UI_HTML)
 
 
-from app.services.domain_filter import is_career_question
+from app.services.domain_filter import (
+    OFFTOPIC_RESPONSE,
+    SMALLTALK_RESPONSE,
+    classify_question,
+)
 from app.agent.graph import run_agent_graph
 
 @router.post("/chat")
 def chat_endpoint(payload: ChatRequest, current_user: User = Depends(get_current_user)):
     """Chat endpoint using the LangGraph agent."""
-    if not is_career_question(payload.message):
-        return {"response": "I can only answer questions related to your career, job applications, or interviews."}
-        
-    state = run_agent_graph(str(current_user.id), payload.message)
-    
+    intent = classify_question(payload.message)
+
+    # Greetings and "what can you do" get a helpful answer rather than a
+    # refusal; only genuinely off-topic questions are turned away.
+    if intent == "smalltalk":
+        return {"response": SMALLTALK_RESPONSE, "intent": intent}
+
+    if intent == "offtopic":
+        return {"response": OFFTOPIC_RESPONSE, "intent": intent}
+
+    try:
+        state = run_agent_graph(str(current_user.id), payload.message)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Agent failed: {exc}",
+        )
+
     answer = state.get("final_answer") or "Sorry, I couldn't generate a response."
-    
-    return {"response": answer}
+
+    return {
+        "response": answer,
+        "intent": intent,
+        "citations": state.get("citations", []),
+    }

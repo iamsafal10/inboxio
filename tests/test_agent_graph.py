@@ -63,8 +63,13 @@ class TestAgentGraph(unittest.TestCase):
             unittest.mock.call.synthesizer({'user_id': 'user-123', 'question': 'What is the deadline?', 'sub_goals': [], 'tool_calls': [], 'retrieved_chunks': [], 'conflicts_detected': [], 'final_answer': None})
         ]
         
-        # We only check the order of methods called, filtering out internal bool checks
-        call_order = [call[0] for call in order_tracker.mock_calls if not call[0].endswith('__bool__')]
+        # We only check the order of the nodes themselves. LangGraph performs
+        # internal dunder calls on the node callables (__bool__, __eq__, ...)
+        # which are recorded on the tracker but are not part of the flow.
+        call_order = [
+            call[0] for call in order_tracker.mock_calls
+            if '.__' not in call[0]
+        ]
         expected_order = ['planner', 'tool_selector', 'retriever', 'conflict_checker', 'synthesizer']
         
         self.assertEqual(call_order, expected_order)

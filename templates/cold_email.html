@@ -279,7 +279,7 @@
                 hasFlags = true;
                 data.flags.forEach(flag => {
                     const li = document.createElement("li");
-                    li.innerHTML = `Claimed: <span class="flag-claim">"${flag.draft_claim}"</span> <br> <span style="color: var(--text-muted); font-size: 0.8rem;">Profile Truth: "${flag.profile_truth}"</span>`;
+                    li.innerHTML = `Claimed: <span class="flag-claim">"${flag.claim || flag.draft_claim || ""}"</span> <br> <span style="color: var(--text-muted); font-size: 0.8rem;">Profile Truth: "${flag.truth || flag.profile_truth || ""}"</span>`;
                     flagsList.appendChild(li);
                 });
                 flagsAlert.classList.remove("hidden");

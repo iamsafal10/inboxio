@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
 
 from app.agent.state import AgentState
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ class PlannerOutput(BaseModel):
     sub_goals: list[str] = Field(description="A clean list of concrete sub-goals required to answer the user's question.")
 
 class ToolCallOutput(BaseModel):
-    tool_name: str = Field(description="Must be one of: 'search_by_sender', 'reconstruct_thread', 'search_by_date_range', or 'semantic_search'")
+    tool_name: str = Field(description="Must be one of: 'search_by_sender', 'reconstruct_thread', 'search_by_date_range', 'list_recent_emails', or 'semantic_search'")
     query: str = Field(description="The search string, sender name, or thread ID. Leave empty if not needed.", default="")
     start_date: str = Field(description="Start date in ISO format, if applicable.", default="")
     end_date: str = Field(description="End date in ISO format, if applicable.", default="")
@@ -113,6 +112,35 @@ def planner_node(state: AgentState) -> AgentState:
                 
     return state
 
+RECENCY_PATTERNS = (
+    r"\b(most )?recent\b", r"\blatest\b", r"\bnewest\b", r"\blast few\b",
+    r"\bwhat'?s new\b", r"\brecently\b",
+)
+
+
+def _ensure_recency_tool(question: str, tool_calls: list) -> list:
+    """
+    Deterministically guarantee a recency lookup when the user asked for recent
+    mail. Semantic search ranks by vector distance, not date, so relying on the
+    LLM router alone means "what are my recent emails?" silently degrades to a
+    similarity search whenever the structured tool call fails.
+    """
+    if not question:
+        return tool_calls
+
+    import re as _re
+    if not any(_re.search(p, question.lower()) for p in RECENCY_PATTERNS):
+        return tool_calls
+
+    if any(tc.get("tool_name") == "list_recent_emails" for tc in tool_calls):
+        return tool_calls
+
+    logger.info("Recency intent detected; adding list_recent_emails")
+    return tool_calls + [{
+        "tool_name": "list_recent_emails", "query": "", "start_date": "", "end_date": "",
+    }]
+
+
 def tool_selector_node(state: AgentState) -> AgentState:
     """
     Picks which retrieval tool(s) fit each sub-goal.
@@ -130,36 +158,47 @@ def tool_selector_node(state: AgentState) -> AgentState:
         "1. 'search_by_sender': If the sub-goal mentions a specific person, sender, or email address.\n"
         "2. 'reconstruct_thread': If the sub-goal mentions reading a full 'thread' or 'conversation'.\n"
         "3. 'search_by_date_range': If the sub-goal mentions a time period (e.g. 'last month', '2023').\n"
-        "4. 'semantic_search': For any general topic, question, or fact lookup.\n\n"
+        "4. 'list_recent_emails': If the sub-goal asks for the latest / most recent / newest emails with no other filter. Leave query empty.\n"
+        "5. 'semantic_search': For any general topic, question, or fact lookup.\n\n"
         "Sub-goals:\n{sub_goals}\n\n"
         "Output a list of tool selections, filling in the query/date fields appropriately based on the sub-goal."
     )
     
-    llm = get_planner_llm()
-    structured_llm = llm.with_structured_output(ToolSelectionList)
-    chain = prompt | structured_llm
-    
-    try:
-        sub_goals_str = "\n".join(f"- {g}" for g in sub_goals)
-        result = chain.invoke({"sub_goals": sub_goals_str})
-        
-        if not result or not hasattr(result, "tool_calls"):
-            raise ValueError("LLM returned malformed tool selection output.")
-        # Convert from Pydantic to dicts for state
-        tool_calls = [tc.model_dump() for tc in result.tool_calls]
-        logger.info(f"Tool selector picked: {tool_calls}")
-        
-        return {**state, "tool_calls": tool_calls}
-    except Exception as e:
-        logger.error(f"Tool selector failed: {e}")
+    sub_goals_str = "\n".join(f"- {g}" for g in sub_goals)
+    tool_calls = None
+
+    # Providers with strict tool-call enforcement (Groq) intermittently reject
+    # an otherwise valid generation, so one retry is worth it before degrading.
+    # Building the chain inside the loop keeps a provider that cannot bind the
+    # structured output at all on the same graceful path.
+    for attempt in range(2):
+        try:
+            chain = prompt | get_planner_llm().with_structured_output(ToolSelectionList)
+            result = chain.invoke({"sub_goals": sub_goals_str})
+
+            if not result or not hasattr(result, "tool_calls"):
+                raise ValueError("LLM returned malformed tool selection output.")
+            # Convert from Pydantic to dicts for state
+            tool_calls = [tc.model_dump() for tc in result.tool_calls]
+            logger.info(f"Tool selector picked: {tool_calls}")
+            break
+        except Exception as e:
+            logger.warning(f"Tool selector failed on attempt {attempt + 1}: {e}")
+
+    if tool_calls is None:
+        logger.error("Tool selector failed, falling back to semantic search")
         # Fallback: just semantic search everything
-        fallback_calls = [{"tool_name": "semantic_search", "query": g, "start_date": "", "end_date": ""} for g in sub_goals]
-        return {**state, "tool_calls": fallback_calls}
+        tool_calls = [{"tool_name": "semantic_search", "query": g, "start_date": "", "end_date": ""} for g in sub_goals]
+
+    tool_calls = _ensure_recency_tool(state.get("question", ""), tool_calls)
+
+    return {**state, "tool_calls": tool_calls}
 
 from app.services.retrieval_tools import (
     search_by_sender,
     reconstruct_thread,
-    search_by_date_range
+    search_by_date_range,
+    list_recent_emails
 )
 from app.services.semantic_search import search_emails
 
@@ -188,12 +227,14 @@ def retriever_node(state: AgentState) -> AgentState:
                 chunks = reconstruct_thread(user_id, query)
             elif tool_name == "search_by_date_range" and start_date and end_date:
                 chunks = search_by_date_range(user_id, start_date, end_date, query=query if query else None)
+            elif tool_name == "list_recent_emails":
+                chunks = list_recent_emails(user_id)
             elif tool_name == "semantic_search" and query:
-                chunks = search_emails(user_id, query)
+                chunks = search_emails(user_id, query, top_k=8)
             else:
                 # Fallback to semantic search if tool name is unknown or arguments are invalid
                 if query:
-                    chunks = search_emails(user_id, query)
+                    chunks = search_emails(user_id, query, top_k=8)
                     
             # Deduplicate chunks based on a unique identifier (e.g., text content or chunk_index + thread_id)
             for c in chunks:
@@ -220,7 +261,7 @@ def conflict_checker_node(state: AgentState) -> AgentState:
     """
     logger.info("Running conflict_checker_node")
     retrieved_chunks = state.get("retrieved_chunks", [])
-    
+
     if not retrieved_chunks:
         return {**state, "conflicts_detected": [], "check_status": "passed"}
 

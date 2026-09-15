@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from sqlalchemy.orm import Session
 import json
@@ -18,11 +18,18 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 class DraftRequest(BaseModel):
-    target_context: str
+    recipient_email: EmailStr
+    role_specialization: str
+    company: Optional[str] = None
+    target_context: Optional[str] = None
 
 class SendRequest(BaseModel):
     edited_body: Optional[str] = None
+    edited_subject: Optional[str] = None
     acknowledge_flags: bool = False
+    # Safety valve for testing: route the send to the user's own inbox
+    # instead of the real recipient.
+    send_to_self: bool = False
 
 @router.get("/ui", response_class=HTMLResponse)
 def get_cold_email_ui(request: Request):
@@ -36,15 +43,22 @@ def api_draft_cold_email(
     db: Session = Depends(get_db),
 ):
     """Generate a draft, run critique, and save to DB."""
-    try:
-        # 1. Generate Draft
-        draft_body, chunks_used = draft_cold_email(
-            user_id=current_user.id,
-            target_context=req.target_context
+    if not req.role_specialization.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A role / specialization is required.",
         )
-        # 2. Plant false claim for Task 6 proof
-        draft_body += "\n\nI also have 10 years of experience as a NASA astronaut."
-        # 3. Run Critique
+
+    try:
+        result = draft_cold_email(
+            user_id=current_user.id,
+            role_specialization=req.role_specialization,
+            recipient_email=str(req.recipient_email),
+            company=req.company,
+            target_context=req.target_context,
+        )
+        draft_body = result["draft_text"]
+        chunks_used = result["used_chunks"]
         # self_critique throws RuntimeError if LLM fails, enforcing fail-closed
         flags = self_critique(
             draft=draft_body,
@@ -54,7 +68,10 @@ def api_draft_cold_email(
         # 3. Store in DB
         draft_record = ColdEmailDraft(
             user_id=current_user.id,
-            target_context=req.target_context,
+            target_context=req.target_context or req.role_specialization,
+            recipient_email=str(req.recipient_email),
+            role_specialization=req.role_specialization,
+            subject=result["subject"],
             original_body=draft_body,
             flags=flags,
             status="DRAFTED"
@@ -65,9 +82,19 @@ def api_draft_cold_email(
         
         return {
             "id": draft_record.id,
+            "subject": result["subject"],
+            "recipient_email": str(req.recipient_email),
             "body": draft_body,
             "flags": flags
         }
+    except ValueError as e:
+        # Missing profile content — the user can fix this, so it is a 400.
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -106,11 +133,25 @@ def api_send_cold_email(
             )
             
     final_body = req.edited_body if req.edited_body else draft_record.original_body
-    subject = "Connecting" # Simplified for now, or extract from target_context
-    recipient = "recipient@example.com" # In a real app this would be extracted or passed. For safety and testing, we hardcode or parse.
-    # Actually, we should send it to the current user's email for testing purposes so they don't spam.
-    recipient = current_user.email
-    subject = "Cold Email Draft: " + draft_record.target_context[:20]
+    subject = req.edited_subject or draft_record.subject or (
+        "Regarding " + (draft_record.role_specialization or draft_record.target_context[:40])
+    )
+
+    recipient = draft_record.recipient_email
+    if req.send_to_self or not recipient:
+        # Self-test path: never reaches the real contact.
+        recipient = current_user.email
+
+    # Precondition, not a send failure: leave the draft usable so the user can
+    # grant the scope and retry instead of losing their work.
+    if not current_user.gmail_send_scope_granted:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Gmail send access has not been granted yet. Use 'Grant send "
+                "access' on the Cold Email page, then send this draft again."
+            ),
+        )
 
     try:
         result = send_email(
@@ -123,7 +164,7 @@ def api_send_cold_email(
         
         draft_record.status = "SENT"
         db.commit()
-        return result
+        return {**result, "recipient": recipient, "subject": subject}
     except Exception as e:
         draft_record.status = "FAILED"
         db.commit()

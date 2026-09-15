@@ -48,7 +48,7 @@ class TestRetrieverNode(unittest.TestCase):
         # Verify calls
         mock_search_sender.assert_called_once_with("test_user", "John")
         mock_reconstruct.assert_called_once_with("test_user", "thread1")
-        mock_search_emails.assert_called_once_with("test_user", "something")
+        mock_search_emails.assert_called_once_with("test_user", "something", top_k=8)
         
         # Verify deduplication: msg1_0, msg2_0, msg3_0 should result in 3 chunks, not 4
         chunks = result_state["retrieved_chunks"]

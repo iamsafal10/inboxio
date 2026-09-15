@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { errorMessage } from "@/lib/errors";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { setToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,10 +29,15 @@ export default function SignupPage() {
         throw new Error(data.detail || "Signup failed");
       }
       
-      // Navigate to login after successful signup
-      router.push("/login");
-    } catch (err: any) {
-      setError(err.message);
+      // Signup already returns a usable token — log straight in.
+      if (data.access_token) {
+        setToken(data.access_token);
+        router.push("/chat");
+      } else {
+        router.push("/login");
+      }
+    } catch (err: unknown) {
+      setError(errorMessage(err));
     }
   };
 

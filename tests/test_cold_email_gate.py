@@ -22,7 +22,9 @@ def db_session():
 @pytest.fixture
 def auth_header(db_session: Session):
     unique_email = f"gate_test_{uuid.uuid4()}@example.com"
-    user = User(email=unique_email, hashed_password="fake")
+    # These tests exercise the critique/approval gate, so the user is past the
+    # Gmail send-scope precondition.
+    user = User(email=unique_email, hashed_password="fake", gmail_send_scope_granted=True)
     db_session.add(user)
     db_session.commit()
     token = create_access_token(user.id)
@@ -41,6 +43,8 @@ def test_api_send_unflagged_draft_succeeds(mock_send, db_session: Session, auth_
     draft = ColdEmailDraft(
         user_id=user.id,
         target_context="Target",
+        recipient_email="hr@targetco.example",
+        subject="Hello",
         original_body="Body",
         flags=[],
         status="DRAFTED"
@@ -108,3 +112,60 @@ def test_api_send_flagged_draft_acknowledged_succeeds(mock_send, db_session: Ses
     # Check what was passed to send_email
     call_kwargs = mock_send.call_args[1]
     assert call_kwargs["draft"] == "Fixed Body"
+
+
+@patch("app.routers.cold_email.send_email")
+def test_send_blocked_when_scope_missing_and_draft_stays_retryable(mock_send, db_session: Session):
+    """
+    A missing Gmail send scope is a precondition, not a send failure: the user
+    must be able to grant access and retry the same draft.
+    """
+    user = User(email=f"noscope_{uuid.uuid4()}@example.com", hashed_password="fake",
+                gmail_send_scope_granted=False)
+    db_session.add(user)
+    db_session.commit()
+    headers = {"Authorization": f"Bearer {create_access_token(user.id)}"}
+
+    draft = ColdEmailDraft(
+        user_id=user.id,
+        target_context="Target",
+        recipient_email="hr@targetco.example",
+        original_body="Body",
+        flags=[],
+        status="DRAFTED",
+    )
+    db_session.add(draft)
+    db_session.commit()
+
+    res = client.post(f"/cold_email/api/send/{draft.id}", headers=headers,
+                      json={"acknowledge_flags": True})
+
+    assert res.status_code == 400
+    assert "send access" in res.json()["detail"].lower()
+    mock_send.assert_not_called()
+
+    db_session.refresh(draft)
+    assert draft.status == "DRAFTED"
+
+
+@patch("app.routers.cold_email.send_email")
+def test_send_goes_to_recipient_and_self_override(mock_send, db_session: Session, auth_header):
+    """The HR address is used by default; send_to_self redirects it for testing."""
+    headers, user = auth_header
+    mock_send.return_value = {"status": "SUCCESS"}
+
+    def make_draft():
+        d = ColdEmailDraft(
+            user_id=user.id, target_context="T", recipient_email="hr@targetco.example",
+            subject="Subj", original_body="Body", flags=[], status="DRAFTED",
+        )
+        db_session.add(d); db_session.commit()
+        return d
+
+    d1 = make_draft()
+    client.post(f"/cold_email/api/send/{d1.id}", headers=headers, json={})
+    assert mock_send.call_args.kwargs["recipient"] == "hr@targetco.example"
+
+    d2 = make_draft()
+    client.post(f"/cold_email/api/send/{d2.id}", headers=headers, json={"send_to_self": True})
+    assert mock_send.call_args.kwargs["recipient"] == user.email

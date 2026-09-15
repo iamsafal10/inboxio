@@ -9,6 +9,7 @@ python-multipart
 pydantic
 pydantic-settings
 python-dotenv
+python-dateutil
 cryptography
 google-auth
 google-auth-oauthlib
@@ -20,3 +21,9 @@ langchain-groq
 chromadb
 sentence-transformers
 langchain-openai
+langchain-ollama
+tiktoken
+jinja2
+email-validator
+pytest
+httpx

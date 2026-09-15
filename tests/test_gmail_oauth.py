@@ -105,8 +105,18 @@ class TestGmailOAuth(unittest.TestCase):
         res = client.get("/gmail/oauth/callback")
         self.assertEqual(res.status_code, 400)
 
-    def test_callback_invalid_user_state(self):
+    def test_callback_rejects_unencrypted_state(self):
+        """A raw (non-Fernet) state is not trustworthy identity and must be rejected."""
         res = client.get("/gmail/oauth/callback?code=mock_code&state=non_existent_uuid")
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("Invalid OAuth state", res.json()["detail"])
+
+    def test_callback_unknown_user_in_valid_state(self):
+        """A properly encrypted state for a user that no longer exists is a 404."""
+        from app.services.gmail_oauth import encode_oauth_state
+
+        state = encode_oauth_state("00000000-0000-0000-0000-000000000000", "verifier", "read")
+        res = client.get(f"/gmail/oauth/callback?code=mock_code&state={state}")
         self.assertEqual(res.status_code, 404)
 
     def test_connected_status_endpoint(self):

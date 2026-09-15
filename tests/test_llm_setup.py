@@ -14,7 +14,7 @@ class TestLLMSetup(unittest.TestCase):
         mock_settings.GEMINI_API_KEY = 'test_gemini_key'
         llm = get_llm()
         self.assertIsInstance(llm, ChatGoogleGenerativeAI)
-        self.assertEqual(llm.model, 'gemini-3.5-flash')
+        self.assertEqual(llm.model, 'gemini-2.5-flash')
 
     @patch('app.llm.llm_setup.settings')
     def test_get_llm_groq(self, mock_settings):

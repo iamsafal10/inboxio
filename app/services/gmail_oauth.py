@@ -42,10 +42,11 @@ def decode_oauth_state(state: str) -> Tuple[str, Optional[str], str]:
             data = json.loads(decrypted)
             if isinstance(data, dict) and "user_id" in data:
                 return data["user_id"], data.get("code_verifier"), data.get("intent", "read")
-    except Exception:
-        pass
-    # Fallback if state was passed as raw user_id
-    return state, None, "read"
+    except Exception as exc:
+        raise ValueError("Invalid OAuth state parameter") from exc
+
+    # A well-formed but unexpected payload is still not trustworthy identity.
+    raise ValueError("Invalid OAuth state parameter")
 
 
 def _get_client_config() -> Dict[str, Any]:
